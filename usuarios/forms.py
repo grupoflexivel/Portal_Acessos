@@ -279,6 +279,5 @@ class FuncionarioEdicaoForm(forms.ModelForm):
 
         if commit:
             funcionario.save()
-            self.save_m2m()  # Salva os relacionamentos ManyToMany (essencial para os centros extras)
 
         return funcionario

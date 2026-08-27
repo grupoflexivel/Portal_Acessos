@@ -29,9 +29,6 @@ class LoginView(auth_views.LoginView):
         except Funcionario.DoesNotExist:
             usuario = None
 
-        # ============================================================
-        # 1. VALIDAÇÕES ANTES DE TENTAR AUTENTICAR
-        # ============================================================
         if usuario:
 
             # Conta desativada definitivamente
@@ -48,9 +45,6 @@ class LoginView(auth_views.LoginView):
 
             agora = timezone.now()
 
-            # --------------------------------------------------------
-            # Bloqueio temporário ainda ativo
-            # --------------------------------------------------------
             if usuario.bloqueado_ate and usuario.bloqueado_ate > agora:
                 diferenca = usuario.bloqueado_ate - agora
                 segundos = max(int(diferenca.total_seconds()), 1)
@@ -66,18 +60,9 @@ class LoginView(auth_views.LoginView):
 
                 return self.form_invalid(form)
 
-            # --------------------------------------------------------
-            # Bloqueio temporário terminou
-            #
-            # Mantemos tentativas_falhas = 3.
-            # Assim as próximas falhas serão:
-            # 4 -> ainda permite mais uma
-            # 5 -> desativa definitivamente
-            # --------------------------------------------------------
             if usuario.bloqueado_ate and usuario.bloqueado_ate <= agora:
                 usuario.bloqueado_ate = None
 
-                # Proteção adicional caso o valor esteja inconsistente
                 if usuario.tentativas_falhas < 3:
                     usuario.tentativas_falhas = 3
 
@@ -88,14 +73,9 @@ class LoginView(auth_views.LoginView):
                     ]
                 )
 
-        # ============================================================
-        # 2. TENTA AUTENTICAR NORMALMENTE
-        # ============================================================
         if form.is_valid():
             user = form.get_user()
 
-            # Login correto:
-            # limpa completamente o histórico de falhas
             user.tentativas_falhas = 0
             user.bloqueado_ate = None
 
@@ -108,7 +88,6 @@ class LoginView(auth_views.LoginView):
 
             response = super().form_valid(form)
 
-            # Sessão expira ao fechar navegador
             self.request.session.set_expiry(0)
 
             if getattr(user, "deve_trocar_senha", False):
@@ -118,36 +97,11 @@ class LoginView(auth_views.LoginView):
 
             return response
 
-        # ============================================================
-        # 3. AUTENTICAÇÃO FALHOU
-        # ============================================================
         if usuario:
-            print(
-                "ANTES DO INCREMENTO:",
-                usuario.username,
-                "tentativas_falhas=",
-                usuario.tentativas_falhas,
-                "bloqueado_ate=",
-                usuario.bloqueado_ate
-            )
 
             usuario.tentativas_falhas += 1
-
-            print(
-                "DEPOIS DO INCREMENTO:",
-                usuario.username,
-                "tentativas_falhas=",
-                usuario.tentativas_falhas,
-                "bloqueado_ate=",
-                usuario.bloqueado_ate
-            )
-
             form.errors.clear()
 
-            # --------------------------------------------------------
-            # 5ª tentativa:
-            # desativação definitiva
-            # --------------------------------------------------------
             if usuario.tentativas_falhas >= 5:
                 usuario.tentativas_falhas = 5
                 usuario.is_active = False
@@ -171,10 +125,6 @@ class LoginView(auth_views.LoginView):
                     ),
                 )
 
-            # --------------------------------------------------------
-            # 3ª tentativa:
-            # bloqueio temporário de 1 minuto
-            # --------------------------------------------------------
             elif usuario.tentativas_falhas == 3:
                 usuario.bloqueado_ate = (
                     timezone.now() + timedelta(minutes=1)
@@ -198,9 +148,6 @@ class LoginView(auth_views.LoginView):
                     ),
                 )
 
-            # --------------------------------------------------------
-            # 1ª e 2ª tentativa
-            # --------------------------------------------------------
             elif usuario.tentativas_falhas < 3:
                 usuario.save(
                     update_fields=[
@@ -219,9 +166,6 @@ class LoginView(auth_views.LoginView):
                     ),
                 )
 
-            # --------------------------------------------------------
-            # 4ª tentativa
-            # --------------------------------------------------------
             else:
                 usuario.save(
                     update_fields=[
