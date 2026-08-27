@@ -61,7 +61,7 @@
     </a>
 
     <!-- CADASTRAR COLABORADOR - SOMENTE SUPERUSER -->
-    {% if user.is_superuser %}
+    {% if user.is_staff or user.is_superuser %}
       <a
         href="{% url 'usuarios:cadastro_usuario' %}"
         class="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-emerald-50 transition hover:bg-white/15 hover:text-white"
@@ -85,7 +85,7 @@
     {% endif %}
 
     <!-- GERENCIAR COLABORADORES - SOMENTE SUPERUSER -->
-    {% if user.is_superuser %}
+    {% if user.is_staff or user.is_superuser %}
       <a
         href="{% url 'usuarios:listar_usuarios' %}"
         class="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-emerald-50 transition hover:bg-white/15 hover:text-white"
