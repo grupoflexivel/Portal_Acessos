@@ -1,0 +1,129 @@
+{% load static %}
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Alterar Senha | Grupo Flexível</title>
+  <link rel="icon" type="image/png" href="{% static 'usuarios/images/Grupo Flexível_icon_color_X.png' %}">
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-slate-100 text-slate-900">
+  <div class="min-h-screen md:flex">
+    {% include "usuarios/includes/sidebar.html" %}
+
+    <main id="page-content" class="flex-1 p-6 transition-all duration-300 md:ml-72 md:p-10">
+      <div class="mx-auto max-w-xl">
+        <div class="mb-7 flex items-center justify-between gap-4">
+          <div>
+            <p class="text-sm font-semibold text-[#00776d]">Segurança</p>
+            <h1 class="mt-1 text-3xl font-bold tracking-tight">Redefinir Senha</h1>
+            <p class="mt-2 text-slate-600">Altere sua senha de acesso ao portal.</p>
+          </div>
+        </div>
+
+        <section class="rounded-[25px] bg-[#eef7f7] px-6 py-5 sm:px-8 sm:py-6 text-left shadow-xl shadow-emerald-950/10 ring-1 ring-slate-200/60">
+          <h2 class="text-xl sm:text-2xl font-bold tracking-tight text-slate-800">Alterar Senha</h2>
+          <p class="mt-1 text-sm text-slate-500 sm:text-base">Digite sua senha atual e escolha uma nova senha.</p>
+
+          <form method="post" class="mt-5 space-y-3 sm:mt-6 sm:space-y-4">
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+              <div class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{{ form.non_field_errors }}</div>
+            {% endif %}
+
+            <!-- SENHA ATUAL -->
+            <div>
+              <label for="{{ form.old_password.id_for_label }}" class="mb-1 block text-sm font-bold text-slate-800">Senha Atual</label>
+              <div class="relative">
+                <input id="{{ form.old_password.id_for_label }}" name="{{ form.old_password.html_name }}" type="password" autocomplete="current-password" required placeholder="Digite sua senha atual" class="w-full rounded-2xl border border-slate-300 bg-white px-4 py-2.5 pr-12 text-base text-slate-800 placeholder:text-slate-400 outline-none transition focus:border-[#00776d] focus:ring-4 focus:ring-emerald-700/15">
+                <button type="button" data-target="{{ form.old_password.id_for_label }}" aria-label="Mostrar senha" aria-pressed="false" class="toggle-password absolute inset-y-0 right-0 flex w-12 items-center justify-center rounded-r-2xl text-slate-500 transition hover:text-[#00776d] focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[#00776d]">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 eye-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M2.46 12C3.73 7.94 7.52 5 12 5c4.48 0 8.27 2.94 9.54 7-1.27 4.06-5.06 7-9.54 7-4.48 0-8.27-2.94-9.54-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" class="hidden h-5 w-5 eye-closed" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m3 3 18 18M10.58 10.58A2 2 0 0 0 13.42 13.42M9.88 5.08A10.94 10.94 0 0 1 12 5c4.48 0 8.27 2.94 9.54 7a11.8 11.8 0 0 1-2.16 3.65M6.23 6.23A11.88 11.88 0 0 0 2.46 12C3.73 16.06 7.52 19 12 19c1.61 0 3.14-.38 4.5-1.05"/></svg>
+                </button>
+              </div>
+              {% if form.old_password.errors %}
+                <p class="mt-1 text-xs text-red-600">{{ form.old_password.errors.0 }}</p>
+              {% endif %}
+            </div>
+
+            <!-- NOVA SENHA -->
+            <div>
+              <label for="{{ form.new_password1.id_for_label }}" class="mb-1 block text-sm font-bold text-slate-800">Nova Senha</label>
+              <div class="relative">
+                <input id="{{ form.new_password1.id_for_label }}" name="{{ form.new_password1.html_name }}" type="password" autocomplete="new-password" required placeholder="Digite a nova senha" class="w-full rounded-2xl border border-slate-300 bg-white px-4 py-2.5 pr-12 text-base text-slate-800 placeholder:text-slate-400 outline-none transition focus:border-[#00776d] focus:ring-4 focus:ring-emerald-700/15">
+                <button type="button" data-target="{{ form.new_password1.id_for_label }}" aria-label="Mostrar senha" aria-pressed="false" class="toggle-password absolute inset-y-0 right-0 flex w-12 items-center justify-center rounded-r-2xl text-slate-500 transition hover:text-[#00776d] focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[#00776d]">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 eye-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M2.46 12C3.73 7.94 7.52 5 12 5c4.48 0 8.27 2.94 9.54 7-1.27 4.06-5.06 7-9.54 7-4.48 0-8.27-2.94-9.54-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" class="hidden h-5 w-5 eye-closed" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m3 3 18 18M10.58 10.58A2 2 0 0 0 13.42 13.42M9.88 5.08A10.94 10.94 0 0 1 12 5c4.48 0 8.27 2.94 9.54 7a11.8 11.8 0 0 1-2.16 3.65M6.23 6.23A11.88 11.88 0 0 0 2.46 12C3.73 16.06 7.52 19 12 19c1.61 0 3.14-.38 4.5-1.05"/></svg>
+                </button>
+              </div>
+              {% if form.new_password1.errors %}
+                <p class="mt-1 text-xs text-red-600">{{ form.new_password1.errors.0 }}</p>
+              {% endif %}
+            </div>
+
+            <!-- CONFIRMAÇÃO DA NOVA SENHA -->
+            <div>
+              <label for="{{ form.new_password2.id_for_label }}" class="mb-1 block text-sm font-bold text-slate-800">Confirme a Nova Senha</label>
+              <div class="relative">
+                <input id="{{ form.new_password2.id_for_label }}" name="{{ form.new_password2.html_name }}" type="password" autocomplete="new-password" required placeholder="Confirme a nova senha" class="w-full rounded-2xl border border-slate-300 bg-white px-4 py-2.5 pr-12 text-base text-slate-800 placeholder:text-slate-400 outline-none transition focus:border-[#00776d] focus:ring-4 focus:ring-emerald-700/15">
+                <button type="button" data-target="{{ form.new_password2.id_for_label }}" aria-label="Mostrar senha" aria-pressed="false" class="toggle-password absolute inset-y-0 right-0 flex w-12 items-center justify-center rounded-r-2xl text-slate-500 transition hover:text-[#00776d] focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[#00776d]">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 eye-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M2.46 12C3.73 7.94 7.52 5 12 5c4.48 0 8.27 2.94 9.54 7-1.27 4.06-5.06 7-9.54 7-4.48 0-8.27-2.94-9.54-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" class="hidden h-5 w-5 eye-closed" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m3 3 18 18M10.58 10.58A2 2 0 0 0 13.42 13.42M9.88 5.08A10.94 10.94 0 0 1 12 5c4.48 0 8.27 2.94 9.54 7a11.8 11.8 0 0 1-2.16 3.65M6.23 6.23A11.88 11.88 0 0 0 2.46 12C3.73 16.06 7.52 19 12 19c1.61 0 3.14-.38 4.5-1.05"/></svg>
+                </button>
+              </div>
+              {% if form.new_password2.errors %}
+                <p class="mt-1 text-xs text-red-600">{{ form.new_password2.errors.0 }}</p>
+              {% endif %}
+            </div>
+
+            <div class="space-y-2 pt-2">
+              <button type="submit" class="w-full rounded-2xl bg-[#8dc63f] px-4 py-2.5 text-base font-bold text-slate-950 shadow-sm transition hover:bg-[#7db631] focus:outline-none focus:ring-4 focus:ring-lime-400/40">Salvar Nova Senha</button>
+              <a href="{% url 'usuarios:home' %}" class="block w-full rounded-2xl border border-slate-300 bg-white px-4 py-2.5 text-center text-base font-semibold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-4 focus:ring-slate-300/30">Cancelar</a>
+            </div>
+          </form>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // Script do menu lateral (sidebar)
+    const sidebar = document.getElementById('sidebar');
+    const pageContent = document.getElementById('page-content');
+    const toggle = document.getElementById('sidebar-toggle');
+    const labels = document.querySelectorAll('.sidebar-label');
+
+    toggle.addEventListener('click', () => {
+      const collapsed = toggle.getAttribute('aria-expanded') === 'true';
+      toggle.setAttribute('aria-expanded', String(!collapsed));
+      toggle.setAttribute('aria-label', collapsed ? 'Expandir menu' : 'Recolher menu');
+      toggle.setAttribute('title', collapsed ? 'Expandir menu' : 'Recolher menu');
+      sidebar.classList.toggle('md:w-72', !collapsed);
+      sidebar.classList.toggle('md:w-20', collapsed);
+      pageContent.classList.toggle('md:ml-72', !collapsed);
+      pageContent.classList.toggle('md:ml-20', collapsed);
+      labels.forEach((label) => label.classList.toggle('hidden', collapsed));
+    });
+
+    // Script para alternar a visibilidade de todos os campos de senha da página
+    document.querySelectorAll(".toggle-password").forEach(button => {
+      button.addEventListener("click", () => {
+        const inputId = button.getAttribute("data-target");
+        const passwordInput = document.getElementById(inputId);
+        const eyeOpen = button.querySelector(".eye-open");
+        const eyeClosed = button.querySelector(".eye-closed");
+
+        const senhaVisivel = passwordInput.type === "text";
+        passwordInput.type = senhaVisivel ? "password" : "text";
+        button.setAttribute("aria-pressed", String(!senhaVisivel));
+        button.setAttribute("aria-label", senhaVisivel ? "Mostrar senha" : "Ocultar senha");
+        
+        eyeOpen.classList.toggle("hidden", !senhaVisivel);
+        eyeClosed.classList.toggle("hidden", senhaVisivel);
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,295 @@
+{% load static %}
+
+<!doctype html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Colaboradores | Grupo Flexível</title>
+
+    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/custom.css' %}" rel="stylesheet">
+
+    <link rel="icon" type="image/png" href="{% static 'usuarios/images/Grupo Flexível_icon_color_X.png' %}">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="min-h-screen overflow-x-hidden bg-slate-100 text-slate-900">
+    <div class="min-h-screen md:flex">
+        {% include "usuarios/includes/sidebar.html" %}
+        <main id="page-content" class="min-w-0 flex-1 overflow-x-hidden p-6 transition-all duration-300 md:ml-72 md:p-10">
+            <div class="mx-auto w-full min-w-0 max-w-7xl">
+
+                <!-- CABEÇALHO -->
+                <div class="mb-7 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        <p class="text-sm font-semibold text-[#00776d]">Administração</p>
+                        <h1 class="mt-1 text-3xl font-bold tracking-tight text-slate-900">Colaboradores</h1>
+                        <p class="mt-2 text-slate-600">Consulte e altere os colaboradores cadastrados no portal.</p>
+                    </div>
+
+                    <a href="{% url 'usuarios:cadastro_usuario' %}" class="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-[#8dc63f] px-5 py-3 text-sm font-bold text-slate-950 shadow-sm transition hover:bg-[#7db631]">
+                        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                            <circle cx="9" cy="7" r="4"/>
+                            <path d="M19 8v6M22 11h-6"/>
+                        </svg>
+                        Cadastrar colaborador</a>
+                </div>
+
+                <!-- MENSAGENS -->
+                {% include "usuarios/includes/toast_messages.html" %}
+
+                <!-- PESQUISA -->
+                <section class="mb-6 min-w-0 rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-200">
+                    <form id="filtro-form" method="get" class="flex min-w-0 flex-col gap-4">
+
+                        <!-- Linha Superior: Campo de texto e botão de limpar -->
+                        <div class="flex flex-col gap-3 sm:flex-row">
+                            <div class="relative min-w-0 flex-1">
+                                <svg class="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="11" cy="11" r="8"/>
+                                    <path d="m21 21-4.3-4.3"/>
+                                </svg>
+                                <input type="text" id="input-busca" name="busca" value="{{ busca }}" placeholder="Pesquisar por nome, usuário ou e-mail..." class="w-full min-w-0 rounded-xl border border-slate-300 bg-white py-3 pl-12 pr-4 text-sm outline-none transition focus:border-[#00776d] focus:ring-4 focus:ring-emerald-700/10">
+                            </div>
+
+                            {% if busca or empresa_selecionada or centro_custo_selecionado or departamento_selecionado or status_selecionado %}
+                                <a href="{% url 'usuarios:listar_usuarios' %}" class="shrink-0 rounded-xl border border-slate-300 bg-white px-6 py-3 text-center text-sm font-semibold text-slate-700 transition hover:bg-slate-50">Limpar filtros</a>
+                            {% endif %}
+                        </div>
+
+                        <!-- Linha Inferior: Selects Avançados -->
+                        <div class="grid grid-cols-1 gap-3 sm:grid-cols-4">
+                            <!-- Empresa -->
+                            <div>
+                                <select name="empresa" class="auto-submit w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-700 outline-none transition focus:border-[#00776d] focus:ring-4 focus:ring-emerald-700/10">
+                                    <option value="">Todas as Empresas</option>
+                                    {% for emp in empresas %}
+                                        <option value="{{ emp.id }}" {% if empresa_selecionada == emp.id|stringformat:"s" %}selected{% endif %}>{{ emp.nome }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <!-- Centro de Custo -->
+                            <div>
+                                <select name="centro_custo" class="auto-submit w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-700 outline-none transition focus:border-[#00776d] focus:ring-4 focus:ring-emerald-700/10">
+                                    <option value="">Todos os Centros de Custo</option>
+                                    {% for cc in centros_custo %}
+                                        <option value="{{ cc.id }}" {% if centro_custo_selecionado == cc.id|stringformat:"s" %}selected{% endif %}>{{ cc.descricao }} ({{ cc.codigo }})</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <!-- Departamento -->
+                            <div>
+                                <select name="departamento" class="auto-submit w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-700 outline-none transition focus:border-[#00776d] focus:ring-4 focus:ring-emerald-700/10">
+                                    <option value="">Todos os Departamentos</option>
+                                    {% for dep in departamentos %}
+                                        <option value="{{ dep.id }}" {% if departamento_selecionado == dep.id|stringformat:"s" %}selected{% endif %}>{{ dep.nome }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <!-- Status -->
+                            <div>
+                                <select name="status" class="auto-submit w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-700 outline-none transition focus:border-[#00776d] focus:ring-4 focus:ring-emerald-700/10">
+                                    <option value="">Todos os Status</option>
+                                    <option value="ativo" {% if status_selecionado == 'ativo' %}selected{% endif %}>Ativo</option>
+                                    <option value="inativo" {% if status_selecionado == 'inativo' %}selected{% endif %}>Inativo</option>
+                                </select>
+                            </div>
+                        </div>
+
+                    </form>
+                </section>
+
+                <!-- TABELA -->
+                <section class="min-w-0 overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-200">
+                    <div class="border-b border-slate-200 px-6 py-5">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h2 class="text-lg font-bold text-slate-900">Usuários cadastrados</h2>
+                                <p class="mt-1 text-sm text-slate-500">{{ usuarios|length }} colaborador(es) encontrado(s)</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="w-full min-w-0">
+                        <table class="w-full table-fixed divide-y divide-slate-200">
+                            <thead class="bg-slate-50">
+                                <tr>
+                                    <!-- COLABORADOR -->
+                                    <th class="w-[30%] px-3 py-3 text-left text-[11px] font-bold uppercase tracking-wide text-slate-500">Colaborador</th>
+
+                                    <!-- USUÁRIO -->
+                                    <th class="w-[14%] px-3 py-3 text-left text-[11px] font-bold uppercase tracking-wide text-slate-500">Usuário</th>
+
+                                    <!-- CENTRO DE CUSTO -->
+                                    <th class="w-[22%] px-3 py-3 text-left text-[11px] font-bold uppercase tracking-wide text-slate-500">Centro de custo</th>
+
+                                    <!-- PERFIL -->
+                                    <th class="w-[13%] px-2 py-3 text-left text-[11px] font-bold uppercase tracking-wide text-slate-500">Perfil</th>
+
+                                    <!-- STATUS -->
+                                    <th class="w-[13%] px-2 py-3 text-left text-[11px] font-bold uppercase tracking-wide text-slate-500">Status</th>
+
+                                    <!-- AÇÕES -->
+                                    <th class="w-[8%] px-1 py-3 text-center text-[11px] font-bold uppercase tracking-wide text-slate-500">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100 bg-white">
+
+                                {% for usuario in usuarios %}
+                                    <tr class="transition hover:bg-slate-50">
+
+                                        <!-- COLABORADOR -->
+                                        <td class="min-w-0 px-3 py-3">
+                                            <div class="flex min-w-0 items-center gap-2">
+                                                <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#00776d]/10 text-sm font-bold text-[#00776d]">
+                                                    {% if usuario.nome %}
+                                                        {{ usuario.nome|slice:":1"|upper }}
+                                                    {% else %}
+                                                        {{ usuario.username|slice:":1"|upper }}
+                                                    {% endif %}
+                                                </div>
+
+                                                <div class="min-w-0">
+                                                    <p class="truncate text-sm font-semibold text-slate-900" title="{{ usuario.nome|default:usuario.username }}">{{ usuario.nome|default:usuario.username }}</p>
+                                                    <p class="truncate text-xs text-slate-500" title="{{ usuario.email }}">{{ usuario.email|default:"Sem e-mail" }}</p>
+                                                </div>
+                                            </div>
+                                        </td>
+
+                                        <!-- USUÁRIO -->
+                                        <td class="min-w-0 px-3 py-3 text-sm text-slate-700">
+                                            <p class="truncate" title="{{ usuario.username }}">{{ usuario.username }}</p>
+                                        </td>
+
+                                        <!-- CENTRO DE CUSTO -->
+                                        <td class="min-w-0 px-3 py-3 text-sm text-slate-700">
+                                            {% if usuario.centro_custo %}
+                                                <p class="truncate font-medium text-slate-800" title="{{ usuario.centro_custo.descricao }}">{{ usuario.centro_custo.descricao }}</p>
+                                                <p class="truncate text-[11px] text-slate-400" title="{{ usuario.centro_custo.codigo }}">{{ usuario.centro_custo.codigo }}</p>
+                                            {% else %}
+                                                <span class="text-xs text-slate-400">Não informado</span>
+                                            {% endif %}
+                                        </td>
+
+                                        <!-- PERFIL -->
+                                        <td class="min-w-0 px-2 py-3">
+                                            {% if usuario.is_superuser %}
+                                                <span class="inline-flex max-w-full truncate rounded-full bg-purple-100 px-2 py-1 text-[11px] font-semibold text-purple-700" title="Superuser">Superuser</span>
+                                            {% elif usuario.is_staff %}
+                                                <span class="inline-flex max-w-full truncate rounded-full bg-blue-100 px-2 py-1 text-[11px] font-semibold text-blue-700" title="Staff">Staff</span>
+                                            {% else %}
+                                                <span class="inline-flex max-w-full truncate rounded-full bg-slate-100 px-2 py-1 text-[11px] font-semibold text-slate-600" title="Colaborador">Colaborador</span>
+                                            {% endif %}
+                                        </td>
+
+                                        <!-- STATUS -->
+                                        <td class="min-w-0 px-2 py-3">
+                                            {% if usuario.ativo %}
+                                                <span class="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-1 text-[11px] font-semibold text-emerald-700">
+                                                    <span class="h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500"></span>Ativo
+                                                </span>
+                                            {% else %}
+                                                <span class="inline-flex items-center gap-1 rounded-full bg-red-100 px-2 py-1 text-[11px] font-semibold text-red-700">
+                                                    <span class="h-1.5 w-1.5 shrink-0 rounded-full bg-red-500"></span>Inativo
+                                                </span>
+                                            {% endif %}
+                                        </td>
+
+                                        <!-- AÇÕES -->
+                                        <td class="px-1 py-3 text-center">
+                                            <a href="{% url 'usuarios:editar_usuario' usuario.id %}" class="inline-flex h-8 w-8 items-center justify-center rounded-md border border-slate-300 bg-white text-slate-600 transition hover:border-[#00776d] hover:bg-emerald-50 hover:text-[#00776d]" title="Editar colaborador" aria-label="Editar colaborador">
+                                                <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                                    <path d="M12 20h9"/>
+                                                    <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/>
+                                                </svg>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% empty %}
+                                    <tr>
+                                        <td colspan="6" class="px-6 py-16 text-center">
+                                            <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-slate-100">
+                                                <svg class="h-7 w-7 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <circle cx="11" cy="11" r="8"/>
+                                                    <path d="m21 21-4.3-4.3"/>
+                                                </svg>
+                                            </div>
+                                            <p class="mt-4 font-semibold text-slate-700">Nenhum colaborador encontrado</p>
+                                            <p class="mt-1 text-sm text-slate-500">Tente alterar os termos da pesquisa.</p>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- SCRIPTS (Sidebar + Filtro Automático) -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // 1. Lógica do Menu Sidebar
+            const sidebar = document.getElementById('sidebar');
+            const pageContent = document.getElementById('page-content');
+            const toggle = document.getElementById('sidebar-toggle');
+            const labels = document.querySelectorAll('.sidebar-label');
+
+            if (toggle && sidebar) {
+                toggle.addEventListener('click', () => {
+                    const collapsed = toggle.getAttribute('aria-expanded') === 'true';
+
+                    toggle.setAttribute('aria-expanded', String(!collapsed));
+                    toggle.setAttribute('aria-label', collapsed ? 'Expandir menu' : 'Recolher menu');
+                    toggle.setAttribute('title', collapsed ? 'Expandir menu' : 'Recolher menu');
+
+                    sidebar.classList.toggle('md:w-72', !collapsed);
+                    sidebar.classList.toggle('md:w-20', collapsed);
+
+                    pageContent.classList.toggle('md:ml-72', !collapsed);
+                    pageContent.classList.toggle('md:ml-20', collapsed);
+
+                    labels.forEach(label => {
+                        label.classList.toggle('hidden', collapsed);
+                    });
+                });
+            }
+
+            // 2. Lógica de Filtro Automático
+            const form = document.getElementById("filtro-form");
+            if (form) {
+                const autoSubmitElements = form.querySelectorAll(".auto-submit");
+                const inputBusca = document.getElementById("input-busca");
+
+                // Submete ao alterar selects
+                autoSubmitElements.forEach(element => {
+                    element.addEventListener("change", () => {
+                        form.submit();
+                    });
+                });
+
+                // Submete ao digitar na busca (com atraso de meio segundo)
+                if (inputBusca) {
+                    let timeout = null;
+                    inputBusca.addEventListener("input", () => {
+                        clearTimeout(timeout);
+                        timeout = setTimeout(() => {
+                            form.submit();
+                        }, 1000);
+                    });
+                }
+            }
+        });
+    </script>
+
+</body>
+</html>

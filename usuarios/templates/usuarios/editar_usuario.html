@@ -1,0 +1,369 @@
+{% load static %}
+
+<!doctype html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Editar colaborador | Grupo Flexível</title>
+    <link rel="icon" type="image/png" href="{% static 'usuarios/images/Grupo Flexível_icon_color_X.png' %}">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="min-h-screen overflow-x-hidden bg-slate-100 text-slate-900">
+    <div class="min-h-screen md:flex">
+        {% include "usuarios/includes/sidebar.html" %}
+
+        <main id="page-content" class="min-w-0 flex-1 overflow-x-hidden p-6 transition-all duration-300 md:ml-72 md:p-10">
+            <div class="mx-auto w-full max-w-4xl">
+
+                <!-- CABEÇALHO -->
+                <div class="mb-7 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        <p class="text-sm font-semibold text-[#00776d]">Administração</p>
+                        <h1 class="mt-1 text-3xl font-bold tracking-tight">Editar colaborador</h1>
+                        <p class="mt-2 text-slate-600">Altere os dados, permissões e senha do colaborador.</p>
+                    </div>
+                    <a href="{% url 'usuarios:listar_usuarios' %}" class="shrink-0 rounded-xl border border-slate-300 bg-white px-4 py-2 text-center text-sm font-semibold text-slate-700 transition hover:border-[#00776d] hover:text-[#00776d]">Voltar</a>
+                </div>
+
+                <!-- IDENTIFICAÇÃO -->
+                <div class="mb-5 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4">
+                    <p class="text-xs font-semibold uppercase tracking-wide text-[#00776d]">Editando</p>
+                    <p class="mt-1 font-bold text-slate-900"> {{ usuario_editado.nome|default:usuario_editado.username }}</p>
+                    <p class="mt-0.5 text-sm text-slate-600">{{ usuario_editado.email }}</p>
+                </div>
+
+                <section class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200 sm:p-8">
+                    <form method="post" class="space-y-8">
+                        {% csrf_token %}
+
+                        <!-- ERROS GERAIS -->
+                        {% if form.non_field_errors %}
+                            <div class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{{ form.non_field_errors }}</div>
+                        {% endif %}
+
+                        <!-- DADOS DO COLABORADOR -->
+                        <div>
+                            <div class="mb-5 border-b border-slate-200 pb-3">
+                                <h2 class="text-lg font-bold text-slate-900">Dados do colaborador</h2>
+                                <p class="mt-1 text-sm text-slate-500">Informações utilizadas para identificação e acesso.</p>
+                            </div>
+
+                            <div class="grid gap-5 md:grid-cols-2">
+                                <!-- USUÁRIO -->
+                                <div>
+                                    <label for="{{ form.username.id_for_label }}" class="mb-2 block text-sm font-semibold text-slate-700">Usuário</label>{{ form.username }}
+
+                                    {% for error in form.username.errors %}
+                                        <p class="mt-1 text-sm text-red-600">{{ error }}</p>
+                                    {% endfor %}
+                                </div>
+
+                                <!-- NOME -->
+                                <div>
+                                    <label for="{{ form.nome.id_for_label }}" class="mb-2 block text-sm font-semibold text-slate-700">Nome</label>{{ form.nome }}
+                                    {% for error in form.nome.errors %}
+                                        <p class="mt-1 text-sm text-red-600">{{ error }}</p>
+                                    {% endfor %}
+                                </div>
+
+                                <!-- E-MAIL -->
+                                <div class="md:col-span-2">
+                                    <label for="{{ form.email.id_for_label }}" class="mb-2 block text-sm font-semibold text-slate-700">E-mail</label>{{ form.email }}
+                                    {% for error in form.email.errors %}
+                                        <p class="mt-1 text-sm text-red-600">{{ error }}</p>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ORGANIZAÇÃO -->
+                        <div>
+                            <div class="mb-5 border-b border-slate-200 pb-3">
+                                <h2 class="text-lg font-bold text-slate-900">Organização</h2>
+                                <p class="mt-1 text-sm text-slate-500">Defina a estrutura organizacional do colaborador.</p>
+                            </div>
+
+                            <div class="grid gap-5 md:grid-cols-2">
+                                <!-- UNIDADE FABRIL -->
+                                <div>
+                                    <label for="{{ form.unidade_fabril.id_for_label }}" class="mb-2 block text-sm font-semibold text-slate-700">Unidade Fabril</label>{{ form.unidade_fabril }}
+
+                                    {% for error in form.unidade_fabril.errors %}
+                                        <p class="mt-1 text-sm text-red-600">{{ error }}</p>
+                                    {% endfor %}
+                                </div>
+
+                                <!-- CENTRO DE CUSTO -->
+                                <div>
+                                    <label for="{{ form.centro_custo.id_for_label }}" class="mb-2 block text-sm font-semibold text-slate-700">Centro de Custo</label>{{ form.centro_custo }}
+
+                                    {% for error in form.centro_custo.errors %}
+                                        <p class="mt-1 text-sm text-red-600">{{ error }}</p>
+                                    {% endfor %}
+                                </div>
+
+                                <!-- DEPARTAMENTO -->
+                                <div class="md:col-span-2">
+                                    <label for="{{ form.departamento.id_for_label }}" class="mb-2 block text-sm font-semibold text-slate-700">Departamento</label>{{ form.departamento }}
+
+                                    {% for error in form.departamento.errors %}
+                                        <p class="mt-1 text-sm text-red-600">{{ error }}</p>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ACESSOS E PERMISSÕES -->
+                        <div>
+                            <div class="mb-5 border-b border-slate-200 pb-3">
+                                <h2 class="text-lg font-bold text-slate-900">Acessos e permissões</h2>
+                                <p class="mt-1 text-sm text-slate-500">Controle o status do colaborador e os acessos administrativos.</p>
+                            </div>
+                            <div class="grid gap-4 md:grid-cols-2">
+
+                                <!-- USUÁRIO ATIVO -->
+                                <label class="flex cursor-pointer items-center justify-between gap-5 rounded-xl border border-slate-200 bg-slate-50 p-5 transition hover:border-[#00776d]/40 hover:bg-emerald-50/30">
+
+                                    <div>
+                                        <p class="font-semibold text-slate-800">Usuário ativo</p>
+                                        <p class="mt-1 text-xs leading-relaxed text-slate-500">Permite que o colaborador acesse o portal.</p>
+                                    </div>
+                                    <div class="shrink-0">{{ form.ativo }}</div>
+                                </label>
+
+                                <!-- STAFF -->
+                                <label class="flex cursor-pointer items-center justify-between gap-5 rounded-xl border border-slate-200 bg-slate-50 p-5 transition hover:border-[#00776d]/40 hover:bg-emerald-50/30">
+                                    <div>
+                                        <p class="font-semibold text-slate-800">Staff</p>
+                                        <p class="mt-1 text-xs leading-relaxed text-slate-500">Permite acesso às funções administrativas autorizadas.</p>
+                                    </div>
+                                    <div class="shrink-0">{{ form.is_staff }}</div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- SENHA -->
+                        <div>
+                            <div class="mb-5 border-b border-slate-200 pb-3">
+                                <h2 class="text-lg font-bold text-slate-900">Alterar senha</h2>
+                                <p class="mt-1 text-sm text-slate-500">Deixe os campos abaixo em branco para manter a senha atual.</p>
+                            </div>
+                            <div class="grid gap-5 md:grid-cols-2">
+
+                                <!-- NOVA SENHA -->
+                                <div>
+                                    <label for="{{ form.nova_senha.id_for_label }}" class="mb-2 block text-sm font-semibold text-slate-700">Nova senha</label>
+
+                                    <div class="relative">{{ form.nova_senha }}
+
+                                        <button type="button" data-target="{{ form.nova_senha.id_for_label }}" class="toggle-password absolute inset-y-0 right-0 flex w-12 items-center justify-center text-slate-400 transition hover:text-[#00776d]" aria-label="Mostrar senha" title="Mostrar senha">
+                                            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                                <path d="M2.46 12C3.73 7.94 7.52 5 12 5s8.27 2.94 9.54 7c-1.27 4.06-5.06 7-9.54 7S3.73 16.06 2.46 12Z"/>
+                                                <circle cx="12" cy="12" r="3"/>
+                                            </svg>
+                                        </button>
+                                    </div>
+
+                                    {% for error in form.nova_senha.errors %}
+                                        <p class="mt-1 text-sm text-red-600">{{ error }}</p>
+                                    {% endfor %}
+                                </div>
+
+                                <!-- CONFIRMAR SENHA -->
+                                <div>
+                                    <label for="{{ form.confirmar_senha.id_for_label }}" class="mb-2 block text-sm font-semibold text-slate-700">Confirmar nova senha</label>
+                                    <div class="relative">
+                                        {{ form.confirmar_senha }}
+                                        <button type="button" data-target="{{ form.confirmar_senha.id_for_label }}" class="toggle-password absolute inset-y-0 right-0 flex w-12 items-center justify-center text-slate-400 transition hover:text-[#00776d]" aria-label="Mostrar senha" title="Mostrar senha">
+                                            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                                <path d="M2.46 12C3.73 7.94 7.52 5 12 5s8.27 2.94 9.54 7c-1.27 4.06-5.06 7-9.54 7S3.73 16.06 2.46 12Z"/>
+                                                <circle cx="12" cy="12" r="3"/>
+                                            </svg>
+                                        </button>
+                                    </div>
+
+                                    {% for error in form.confirmar_senha.errors %}
+                                        <p class="mt-1 text-sm text-red-600">{{ error }}</p>
+                                    {% endfor %}
+                                </div>
+                            </div>
+
+                            <div class="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
+                                <p class="text-sm font-medium text-amber-800">Ao preencher uma nova senha, a senha atual do colaborador será substituída.</p>
+                            </div>
+                        </div>
+
+                        <!-- BOTÕES -->
+                        <div class="flex flex-col-reverse gap-3 border-t border-slate-200 pt-6 sm:flex-row sm:justify-end">
+                            <!-- EXCLUIR -->
+                            {% if request.user.is_superuser %}
+                                {% if usuario_editado.pk != request.user.pk %}
+                                    <button type="button" id="abrir-modal-excluir" class="inline-flex items-center justify-center gap-2 rounded-xl border border-red-300 bg-white px-5 py-3 text-sm font-semibold text-red-600 transition hover:border-red-400 hover:bg-red-50">
+                                        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                            <path d="M3 6h18"/>
+                                            <path d="M8 6V4h8v2"/>
+                                            <path d="M19 6l-1 14H6L5 6"/>
+                                            <path d="M10 11v5"/>
+                                            <path d="M14 11v5"/>
+                                        </svg>
+                                        Excluir colaborador
+                                    </button>
+                                {% else %}
+                                    <div class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-500">Sua própria conta não pode ser excluída.</div>
+                                {% endif %}
+                            {% endif %}
+                            <!-- CANCELAR -->
+                            <a href="{% url 'usuarios:listar_usuarios' %}" class="rounded-xl border border-slate-300 bg-white px-6 py-3 text-center text-sm font-semibold text-slate-700 transition hover:bg-slate-50">Cancelar</a>
+                            <!-- SALVAR ALTERAÇÕES -->
+                            <button type="submit" class="rounded-xl bg-[#8dc63f] px-7 py-3 text-sm font-bold text-slate-950 shadow-sm transition hover:bg-[#7db631]">Salvar alterações</button>
+                        </div>
+                    </form>
+                </section>
+            </div>
+        </main>
+    </div>
+    
+  <!-- MODAL DE CONFIRMAÇÃO DE EXCLUSÃO -->
+    {% if usuario_editado.pk != request.user.pk %}
+        <div id="modal-excluir" class="fixed inset-0 z-[100] hidden items-center justify-center bg-slate-950/50 p-4 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="titulo-modal-excluir">
+            <div class="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+                <div class="flex h-12 w-12 items-center justify-center rounded-full bg-red-100 text-red-600">
+                    <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 6h18"/>
+                        <path d="M8 6V4h8v2"/>
+                        <path d="M19 6l-1 14H6L5 6"/>
+                        <path d="M10 11v5"/>
+                        <path d="M14 11v5"/>
+                    </svg>
+                </div>
+
+                <h2 id="titulo-modal-excluir" class="mt-5 text-xl font-bold text-slate-900">Excluir colaborador?</h2>
+                <p class="mt-2 text-sm leading-relaxed text-slate-600">Você está prestes a excluir permanentemente o colaborador <strong class="font-semibold text-slate-900">{{ usuario_editado.nome|default:usuario_editado.username }}</strong>.</p>
+
+                <div class="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3">
+                    <p class="text-sm font-medium text-red-700">Esta ação não poderá ser desfeita.</p>
+                </div>
+
+                <div class="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+                    <button type="button" id="cancelar-exclusao" class="rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">Cancelar</button>
+
+                    <form method="post" action="{% url 'usuarios:excluir_usuario' usuario_editado.pk %}">
+                        {% csrf_token %}
+                        <button type="submit" class="w-full rounded-xl bg-red-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-red-700">Sim, excluir colaborador</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <script>
+
+        const sidebar = document.getElementById('sidebar');
+        const pageContent = document.getElementById('page-content');
+        const toggle = document.getElementById('sidebar-toggle');
+        const labels = document.querySelectorAll('.sidebar-label');
+
+        if (toggle) {
+            toggle.addEventListener('click', () => {
+                const collapsed = toggle.getAttribute('aria-expanded') === 'true';
+
+                toggle.setAttribute('aria-expanded', String(!collapsed));
+                toggle.setAttribute('aria-label', collapsed ? 'Expandir menu' : 'Recolher menu');
+                toggle.setAttribute('title', collapsed ? 'Expandir menu' : 'Recolher menu');
+
+                sidebar.classList.toggle('md:w-72', !collapsed);
+                sidebar.classList.toggle('md:w-20', collapsed);
+
+                pageContent.classList.toggle('md:ml-72', !collapsed);
+                pageContent.classList.toggle('md:ml-20', collapsed);
+
+                labels.forEach(label => {
+                    label.classList.toggle('hidden', collapsed);
+                });
+            });
+        }
+
+        /* MOSTRAR / OCULTAR SENHA */
+        document
+            .querySelectorAll('.toggle-password')
+            .forEach(button => {
+                button.addEventListener('click', () => {
+                    const targetId = button.getAttribute('data-target');
+                    const input = document.getElementById(targetId);
+
+                    if (!input) {
+                        return;
+                    }
+
+                    if (input.type === 'password') {
+                        input.type = 'text';
+                        button.setAttribute('aria-label', 'Ocultar senha');
+                        button.setAttribute('title', 'Ocultar senha');
+
+                    } else {
+                        input.type = 'password';
+                        button.setAttribute('aria-label', 'Mostrar senha');
+                        button.setAttribute('title', 'Mostrar senha');
+                    }
+                });
+            });
+
+            /* MODAL DE EXCLUSÃO */
+
+        const modalExcluir = document.getElementById('modal-excluir');
+        const abrirModalExcluir =  document.getElementById('abrir-modal-excluir');
+        const cancelarExclusao = document.getElementById('cancelar-exclusao');
+
+        function abrirModal() {
+            if (!modalExcluir) {
+                return;
+            }
+            modalExcluir.classList.remove('hidden');
+            modalExcluir.classList.add('flex');
+
+            document.body.classList.add('overflow-hidden');
+        }
+
+        function fecharModal() {
+            if (!modalExcluir) {
+                return;
+            }
+            modalExcluir.classList.add('hidden');
+            modalExcluir.classList.remove('flex');
+
+            document.body.classList.remove('overflow-hidden');
+        }
+
+        if (abrirModalExcluir) {
+            abrirModalExcluir.addEventListener('click', abrirModal);
+        }
+
+        if (cancelarExclusao) {
+            cancelarExclusao.addEventListener('click', fecharModal);
+        }
+
+        if (modalExcluir) {
+            modalExcluir.addEventListener('click',
+                event => {
+                    if (event.target === modalExcluir) {
+                        fecharModal();
+                    }
+                }
+            );
+        }
+
+        document.addEventListener('keydown',
+            event => {
+                if (event.key === 'Escape') {
+                    fecharModal();
+                }
+            }
+        );
+
+    </script>
+
+</body>
+</html>

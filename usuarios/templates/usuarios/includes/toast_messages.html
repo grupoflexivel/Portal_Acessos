@@ -1,0 +1,70 @@
+{% if messages %}
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-3">
+        {% for message in messages %}
+            <div class="toast-item flex items-center justify-between gap-4 rounded-xl border px-5 py-4 text-sm font-semibold shadow-lg transition-all duration-300 transform translate-y-2 opacity-0
+                {% if message.tags == 'success' %}
+                    border-emerald-200 bg-emerald-50 text-emerald-800
+                {% elif message.tags == 'error' or message.tags == 'danger' %}
+                    border-red-200 bg-red-50 text-red-800
+                {% elif message.tags == 'warning' %}
+                    border-amber-200 bg-amber-50 text-amber-800
+                {% else %}
+                    border-slate-200 bg-white text-slate-800
+                {% endif %}">
+                
+                <div class="flex items-center gap-2.5">
+                    {% if message.tags == 'success' %}
+                        <svg class="h-5 w-5 shrink-0 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20 6 9 17l-5-5"/>
+                        </svg>
+                    {% elif message.tags == 'error' or message.tags == 'danger' %}
+                        <svg class="h-5 w-5 shrink-0 text-red-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/>
+                        </svg>
+                    {% else %}
+                        <svg class="h-5 w-5 shrink-0 text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>
+                        </svg>
+                    {% endif %}
+                    <span>{{ message }}</span>
+                </div>
+
+                <button type="button" class="toast-close text-slate-400 hover:text-slate-700">
+                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 6 6 18"/><path d="m6 6 12 12"/>
+                    </svg>
+                </button>
+            </div>
+        {% endfor %}
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const toasts = document.querySelectorAll(".toast-item");
+            
+            toasts.forEach((toast, index) => {
+                setTimeout(() => {
+                    toast.classList.remove("translate-y-2", "opacity-0");
+                }, 100 * index);
+
+                const closeBtn = toast.querySelector(".toast-close");
+                if (closeBtn) {
+                    closeBtn.append?.(); // Segurança extra
+                    closeBtn.addEventListener("click", () => removerToast(toast));
+                }
+
+                setTimeout(() => {
+                    removerToast(toast);
+                }, 4000 + (index * 200));
+            });
+
+            function removerToast(toast) {
+                if (!toast.isConnected) return;
+                toast.classList.add("translate-y-2", "opacity-0");
+                setTimeout(() => {
+                    toast.remove();
+                }, 300);
+            }
+        });
+    </script>
+{% endif %}

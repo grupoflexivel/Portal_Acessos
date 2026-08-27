@@ -1,0 +1,333 @@
+{% load static %}
+
+<aside
+  id="sidebar"
+  class="flex h-screen w-full flex-col bg-[#004b46] text-white transition-all duration-300 md:fixed md:inset-y-0 md:w-72 overflow-y-auto overflow-x-hidden"
+  aria-label="Menu principal"
+>
+
+  <div class="flex items-center justify-between border-b border-emerald-900/35 px-6 py-7 shrink-0">
+    <a href="{% url 'usuarios:home' %}" class="sidebar-label block">
+      <img
+        src="{% static 'usuarios/images/logo-grupo-flexivel.png' %}"
+        alt="Grupo Flexível"
+        class="h-auto w-full max-w-[185px] object-contain"
+      >
+    </a>
+
+    <button
+      id="sidebar-toggle"
+      type="button"
+      class="rounded-lg p-2 text-emerald-50 transition hover:bg-white/15 hover:text-white"
+      aria-label="Recolher menu"
+      title="Recolher menu"
+      aria-expanded="true"
+    >
+      <svg
+        class="h-5 w-5"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        aria-hidden="true"
+      >
+        <path d="m11 17-5-5 5-5"/>
+        <path d="m18 17-5-5 5-5"/>
+      </svg>
+    </button>
+  </div>
+
+  <nav class="flex-1 space-y-2 px-4 py-6">
+
+    <!-- INÍCIO -->
+    <a
+      href="{% url 'usuarios:home' %}"
+      class="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-emerald-50 transition hover:bg-white/15 hover:text-white"
+      title="Início"
+    >
+      <svg
+        class="h-5 w-5 shrink-0"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        aria-hidden="true"
+      >
+        <path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/>
+        <path d="M9 21v-6h6v6"/>
+      </svg>
+
+      <span class="sidebar-label">Início</span>
+    </a>
+
+    <!-- CADASTRAR COLABORADOR - SOMENTE SUPERUSER -->
+    {% if user.is_superuser %}
+      <a
+        href="{% url 'usuarios:cadastro_usuario' %}"
+        class="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-emerald-50 transition hover:bg-white/15 hover:text-white"
+        title="Cadastrar colaborador"
+      >
+        <svg
+          class="h-5 w-5 shrink-0"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          aria-hidden="true"
+        >
+          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M19 8v6M22 11h-6"/>
+        </svg>
+
+        <span class="sidebar-label">Cadastrar colaborador</span>
+      </a>
+    {% endif %}
+
+    <!-- GERENCIAR COLABORADORES - SOMENTE SUPERUSER -->
+    {% if user.is_superuser %}
+      <a
+        href="{% url 'usuarios:listar_usuarios' %}"
+        class="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-emerald-50 transition hover:bg-white/15 hover:text-white"
+        title="Gerenciar colaboradores"
+      >
+        <svg
+          class="h-5 w-5 shrink-0"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          aria-hidden="true"
+        >
+          <path d="M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"/>
+          <circle cx="10" cy="7" r="4"/>
+          <path d="M21 11h-6"/>
+          <path d="M18 8v6"/>
+        </svg>
+
+        <span class="sidebar-label">Gerenciar colaboradores</span>
+      </a>
+    {% endif %}
+
+    <!-- CADASTRAR RECURSO - STAFF OU SUPERUSER -->
+    {% if user.is_staff or user.is_superuser %}
+      <a
+        href="{% url 'usuarios:cadastrar_recurso' %}"
+        class="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-emerald-50 transition hover:bg-white/15 hover:text-white"
+        title="Cadastrar Links/Arquivos"
+      >
+        <svg
+          class="h-5 w-5 shrink-0"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          aria-hidden="true"
+        >
+          <path d="M12 4v16m8-8H4"/>
+        </svg>
+
+        <span class="sidebar-label">Cadastrar Link/Arquivo</span>
+      </a>
+    {% endif %}
+
+    <!-- ACESSOS -->
+    <details class="group">
+      <summary
+        class="flex cursor-pointer list-none items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold text-emerald-50 transition hover:bg-white/15 hover:text-white"
+      >
+        <svg
+          class="h-4 w-4 shrink-0 transition group-open:rotate-90"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          aria-hidden="true"
+        >
+          <path d="m9 18 6-6-6-6"/>
+        </svg>
+
+        <span class="sidebar-label">Acessos</span>
+      </summary>
+
+      <div class="sidebar-label ml-3 mt-1 space-y-1 border-l border-emerald-200/25 pl-3">
+
+        <!-- ESPAÇO COLABORADORES -->
+        <details class="group">
+          <summary
+            class="flex cursor-pointer list-none items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-emerald-50 transition hover:bg-white/15 hover:text-white"
+          >
+            <svg
+              class="h-4 w-4 shrink-0 transition group-open:rotate-90"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              aria-hidden="true"
+            >
+              <path d="m9 18 6-6-6-6"/>
+            </svg>
+
+            <span class="sidebar-label">Espaço Colaboradores</span>
+          </summary>
+
+          <div class="sidebar-label ml-7 mt-1 space-y-1 border-l border-emerald-200/25 pl-3">
+
+            {% for link in links_uteis %}
+              <a
+                href="{% if link.arquivo %}{{ link.arquivo.url }}{% else %}{{ link.url }}{% endif %}"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="block truncate rounded-lg px-3 py-2 text-xs text-emerald-100/85 transition hover:bg-white/15 hover:text-white"
+              >
+                {{ link.nome }}
+              </a>
+            {% empty %}
+              <span class="block px-3 py-2 text-xs text-emerald-100/60">
+                Nenhum link cadastrado
+              </span>
+            {% endfor %}
+
+          </div>
+        </details>
+
+        <!-- CENTROS DE CUSTO -->
+        {% for grupo in ferramentas %}
+
+          <details class="group">
+
+            <summary
+              class="flex cursor-pointer list-none items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-emerald-50 transition hover:bg-white/15 hover:text-white"
+            >
+              <svg
+                class="h-4 w-4 shrink-0 transition group-open:rotate-90"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                aria-hidden="true"
+              >
+                <path d="m9 18 6-6-6-6"/>
+              </svg>
+
+              <span
+                class="sidebar-label min-w-0 truncate"
+                title="{{ grupo.centro_custo_codigo }} - {{ grupo.centro_custo_descricao }}"
+              >
+                {{ grupo.centro_custo_descricao }}
+              </span>
+            </summary>
+
+            <div class="sidebar-label ml-7 mt-1 space-y-1 border-l border-emerald-200/25 pl-3">
+
+              {% for ferramenta in grupo.itens %}
+                <a
+                  href="{% if ferramenta.arquivo %}{{ ferramenta.arquivo.url }}{% else %}{{ ferramenta.url }}{% endif %}"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="block truncate rounded-lg px-3 py-2 text-xs text-emerald-100/85 transition hover:bg-white/15 hover:text-white"
+                >
+                  {{ ferramenta.nome }}
+                </a>
+              {% endfor %}
+
+            </div>
+
+          </details>
+
+        {% endfor %}
+
+      </div>
+    </details>
+
+    <!-- ALTERAR SENHA -->
+    <a
+      href="{% url 'usuarios:mudar_senha' %}"
+      class="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-emerald-50 transition hover:bg-white/15 hover:text-white"
+      title="Alterar senha"
+    >
+      <svg
+        class="h-5 w-5 shrink-0"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        aria-hidden="true"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"
+        />
+      </svg>
+
+      <span class="sidebar-label">Alterar senha</span>
+    </a>
+
+    <!-- ADMIN -->
+    {% if user.is_staff %}
+      <a
+        href="{% url 'admin:index' %}"
+        class="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-emerald-50 transition hover:bg-white/15 hover:text-white"
+        title="Administração"
+      >
+        <svg
+          class="h-5 w-5 shrink-0"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          aria-hidden="true"
+        >
+          <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 1 0-2 3.46l.15.08a2 2 0 0 1 1 1.73v.5a2 2 0 0 1-1 1.74l-.15.09a2 2 0 1 0 2 3.46l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 1 0 2-3.46l-.15-.08a2 2 0 0 1-1-1.73v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 1 0-2-3.46l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2Z"/>
+          <circle cx="12" cy="12" r="3"/>
+        </svg>
+
+        <span class="sidebar-label">Administração</span>
+      </a>
+    {% endif %}
+
+  </nav>
+
+  <div class="border-t border-emerald-900/35 px-6 py-6 text-sm shrink-0">
+
+    <div class="sidebar-label">
+      <p class="font-semibold text-white">
+        {{ user.nome|default:user.username }}
+      </p>
+
+      <p class="mt-1 truncate text-emerald-100/75">
+        {{ user.email }}
+      </p>
+    </div>
+
+    <form
+      method="post"
+      action="{% url 'usuarios:logout' %}"
+      class="mt-5"
+    >
+      {% csrf_token %}
+
+      <button
+        class="flex items-center gap-2 font-medium text-emerald-50 underline decoration-emerald-200/50 underline-offset-4 transition hover:text-white"
+        title="Sair"
+      >
+        <svg
+          class="h-4 w-4 shrink-0"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          aria-hidden="true"
+        >
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+          <path d="m16 17 5-5-5-5M21 12H9"/>
+        </svg>
+
+        <span class="sidebar-label">Sair</span>
+      </button>
+    </form>
+
+  </div>
+
+</aside>

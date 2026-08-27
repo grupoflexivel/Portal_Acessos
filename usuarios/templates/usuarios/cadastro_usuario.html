@@ -1,0 +1,134 @@
+﻿{% load static %}
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cadastrar colaborador | Grupo Flexível</title>
+  <link rel="icon" type="image/png" href="{% static 'usuarios/images/Grupo Flexível_icon_color_X.png' %}">
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-slate-100 text-slate-900">
+  <div class="min-h-screen md:flex">
+    {% include "usuarios/includes/sidebar.html" %}
+
+    <main id="page-content" class="flex-1 p-6 transition-all duration-300 md:ml-72 md:p-10">
+      <div class="mx-auto max-w-3xl">
+        
+        <div class="mb-7 flex items-center justify-between gap-4">
+          <div>
+            <p class="text-sm font-semibold text-[#00776d]">Administração</p>
+            <h1 class="mt-1 text-3xl font-bold tracking-tight">Cadastrar colaborador</h1>
+            <p class="mt-2 text-slate-600">Crie uma nova conta para acesso ao portal.</p>
+          </div>
+          <a href="{% url 'usuarios:listar_usuarios' %}" class="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-[#00776d] hover:text-[#00776d]">Voltar</a>
+        </div>
+        
+        <section class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200 sm:p-8">
+          <form method="post" class="space-y-5">
+            {% csrf_token %}
+            
+            {% if form.non_field_errors %}
+              <div class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                {{ form.non_field_errors }}
+              </div>
+            {% endif %}
+
+            {% for field in form %}
+              <div>
+                {% if field.name == 'ativo' %}
+                  <label class="flex cursor-pointer items-center gap-3 rounded-xl border border-slate-200 p-4 text-sm font-medium text-slate-700">
+                    {{ field }} <span>{{ field.label }}</span>
+                  </label>
+                
+                {% elif 'senha' in field.name.lower or 'password' in field.name.lower %}
+                  <!-- Campo de Senha com o botão de Olho -->
+                  <label for="{{ field.id_for_label }}" class="mb-2 block text-sm font-semibold text-slate-700">{{ field.label }}</label>
+                  <div class="relative w-full password-container">
+                    <div class="[&>input]:w-full [&>input]:rounded-xl [&>input]:border [&>input]:border-slate-300 [&>input]:px-4 [&>input]:py-2.5 [&>input]:pr-12 [&>input]:text-sm [&>input]:focus:border-[#00776d] [&>input]:focus:outline-none">
+                      {{ field }}
+                    </div>
+                    <button type="button" class="toggle-password-btn absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-400 hover:text-slate-600 focus:outline-none">
+                      <!-- Ícone de Olho Fechado (Padrão) -->
+                      <svg class="eye-closed h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.243 4.243L9.88 9.88" />
+                      </svg>
+                      <!-- Ícone de Olho Aberto -->
+                      <svg class="eye-open hidden h-5 w-5 text-[#00776d]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                    </button>
+                  </div>
+
+                {% else %}
+                  <label for="{{ field.id_for_label }}" class="mb-2 block text-sm font-semibold text-slate-700">{{ field.label }}</label>
+                  {{ field }}
+                {% endif %}
+
+                {% if field.help_text %}
+                  <p class="mt-1 text-xs text-slate-500">{{ field.help_text }}</p>
+                {% endif %}
+                
+                {% for error in field.errors %}
+                  <p class="mt-1 text-sm text-red-600">{{ error }}</p>
+                {% endfor %}
+              </div>
+            {% endfor %}
+
+            <button type="submit" class="w-full rounded-xl bg-[#8dc63f] px-5 py-3 font-bold text-slate-950 transition hover:bg-[#7db631] focus:outline-none focus:ring-4 focus:ring-lime-400/40">
+              Cadastrar colaborador
+            </button>
+          </form>
+        </section>
+
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // Script da Sidebar
+    const sidebar = document.getElementById('sidebar');
+    const pageContent = document.getElementById('page-content');
+    const toggle = document.getElementById('sidebar-toggle');
+    const labels = document.querySelectorAll('.sidebar-label');
+
+    if (toggle && sidebar) {
+      toggle.addEventListener('click', () => {
+        const collapsed = toggle.getAttribute('aria-expanded'] === 'true';
+        toggle.setAttribute('aria-expanded', String(!collapsed));
+        toggle.setAttribute('aria-label', collapsed ? 'Expandir menu' : 'Recolher menu');
+        toggle.setAttribute('title', collapsed ? 'Expandir menu' : 'Recolher menu');
+        sidebar.classList.toggle('md:w-72', !collapsed);
+        sidebar.classList.toggle('md:w-20', collapsed);
+        pageContent.classList.toggle('md:ml-72', !collapsed);
+        pageContent.classList.toggle('md:ml-20', collapsed);
+        labels.forEach((label) => label.classList.toggle('hidden', collapsed));
+      });
+    }
+
+    // Script para alternar a visualização da senha
+    document.querySelectorAll('.password-container').forEach(container => {
+      const input = container.querySelector('input');
+      const btn = container.querySelector('.toggle-password-btn');
+      const eyeClosed = container.querySelector('.eye-closed');
+      const eyeOpen = container.querySelector('.eye-open');
+
+      if (input && btn) {
+        btn.addEventListener('click', () => {
+          const isPassword = input.getAttribute('type') === 'password';
+          input.setAttribute('type', isPassword ? 'text' : 'password');
+
+          if (isPassword) {
+            eyeClosed.classList.add('hidden');
+            eyeOpen.classList.remove('hidden');
+          } else {
+            eyeClosed.classList.remove('hidden');
+            eyeOpen.classList.add('hidden');
+          }
+        });
+      }
+    });
+  </script>
+</body>
+</html>

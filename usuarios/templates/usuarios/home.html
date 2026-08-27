@@ -1,0 +1,149 @@
+﻿{% load static %}
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Painel de Acessos | Grupo Flexível</title>
+  <link rel="icon" type="image/png" href="{% static 'usuarios/images/Grupo Flexível_icon_color_X.png' %}">
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-slate-100 text-slate-900">
+  <div class="min-h-screen md:flex">
+    {% include "usuarios/includes/sidebar.html" %}
+
+    <main id="page-content" class="flex-1 p-6 transition-all duration-300 md:ml-72 md:p-10">
+      <div class="mx-auto max-w-6xl">
+        <header class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p class="text-sm font-medium text-[#00776d]">Área do colaborador</p>
+            <h1 class="mt-1 text-3xl font-bold tracking-tight">Olá, {{ user.nome|default:user.username }}</h1>
+            <p class="mt-2 text-slate-600">Acesse os sistemas disponíveis para o seu perfil.</p>
+          </div>
+          
+          <!-- CAMPO DE BUSCA -->
+          <div class="w-full sm:w-[480px]">
+            <div class="relative">
+              <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
+                <svg class="w-4 h-4" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+              </span>
+              <input type="text" id="searchInput" placeholder="Buscar links ou documentos..." class="w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-10 pr-4 text-sm text-slate-900 shadow-sm placeholder-slate-400 focus:border-[#00776d] focus:outline-none focus:ring-1 focus:ring-[#00776d]">
+            </div>
+          </div>
+        </header>
+
+        <!-- MENSAGEM QUANDO NENHUM RESULTADO FOR ENCONTRADO -->
+        <div id="noResults" class="hidden rounded-xl border border-dashed border-slate-300 bg-white p-8 text-center mb-8">
+          <h2 class="font-semibold text-slate-800">Nenhum resultado encontrado</h2>
+          <p class="mt-2 text-sm text-slate-500">Tente buscar por outro termo.</p>
+        </div>
+
+        {% if links_uteis %}
+          <section class="mb-8 search-section">
+            <h2 class="mb-4 text-xl font-semibold">Links/Arquivos Colaboradores</h2>
+            <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+              {% for link in links_uteis %}
+                <a href="{% if link.arquivo %}{{ link.arquivo.url }}{% else %}{{ link.url }}{% endif %}" target="_blank" rel="noopener noreferrer" class="search-item rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-md" data-name="{{ link.nome|lower }}">
+                  <p class="font-semibold text-slate-800">{{ link.nome }}</p>
+                  <p class="mt-2 text-sm text-slate-500">{% if link.arquivo %}Baixar arquivo{% else %}Abrir link{% endif %}</p>
+                </a>
+              {% endfor %}
+            </div>
+          </section>
+        {% endif %}
+
+        {% if administrador and ferramentas %}
+          <section class="space-y-8 search-section">
+            <div>
+              <h2 class="text-xl font-semibold">Ferramentas administrativas</h2>
+              <p class="mt-1 text-sm text-slate-600">Como administrador, você visualiza os acessos de todos os centros de custo.</p>
+            </div>
+            {% for grupo in ferramentas %}
+              <section class="search-grupo">
+                <h3 class="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">Centro de custo {{ grupo.centro_custo_codigo }} - {{ grupo.centro_custo_descricao }}</h3>
+                <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                  {% for ferramenta in grupo.itens %}
+                    <a href="{% if ferramenta.arquivo %}{{ ferramenta.arquivo.url }}{% else %}{{ ferramenta.url }}{% endif %}" target="_blank" rel="noopener noreferrer" class="search-item rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-md" data-name="{{ ferramenta.nome|lower }}">
+                      <p class="font-semibold text-slate-800">{{ ferramenta.nome }}</p>
+                      <p class="mt-2 text-sm text-slate-500">{% if ferramenta.arquivo %}Baixar arquivo{% else %}Abrir link{% endif %}</p>
+                    </a>
+                  {% endfor %}
+                </div>
+              </section>
+            {% endfor %}
+          </section>
+        {% elif ferramentas %}
+          <section class="search-section">
+            <h2 class="mb-4 text-xl font-semibold">Suas ferramentas</h2>
+            {% for grupo in ferramentas %}
+              <div class="search-grupo mb-6">
+                <h3 class="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">{{ grupo.centro_custo_descricao }}</h3>
+                <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                  {% for ferramenta in grupo.itens %}
+                    <a href="{% if ferramenta.arquivo %}{{ ferramenta.arquivo.url }}{% else %}{{ ferramenta.url }}{% endif %}" target="_blank" rel="noopener noreferrer" class="search-item rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-md" data-name="{{ ferramenta.nome|lower }}">
+                      <p class="font-semibold text-slate-800">{{ ferramenta.nome }}</p>
+                      <p class="mt-2 text-sm text-slate-500">{% if ferramenta.arquivo %}Baixar arquivo{% else %}Abrir link{% endif %}</p>
+                    </a>
+                  {% endfor %}
+                </div>
+              </div>
+            {% endfor %}
+          </section>
+        {% else %}
+          <section class="rounded-xl border border-dashed border-slate-300 bg-white p-8 text-center">
+            <h2 class="font-semibold text-slate-800">Nenhuma ferramenta disponível</h2>
+            <p class="mt-2 text-sm text-slate-500">Não há ferramentas configuradas para o seu centro de custo.</p>
+          </section>
+        {% endif %}
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // Script da Sidebar
+    const sidebar = document.getElementById('sidebar');
+    const pageContent = document.getElementById('page-content');
+    const toggle = document.getElementById('sidebar-toggle');
+    const labels = document.querySelectorAll('.sidebar-label');
+
+    toggle.addEventListener('click', () => {
+      const collapsed = toggle.getAttribute('aria-expanded') === 'true';
+      toggle.setAttribute('aria-expanded', String(!collapsed));
+      toggle.setAttribute('aria-label', collapsed ? 'Expandir menu' : 'Recolher menu');
+      toggle.setAttribute('title', collapsed ? 'Expandir menu' : 'Recolher menu');
+      sidebar.classList.toggle('md:w-72', !collapsed);
+      sidebar.classList.toggle('md:w-20', collapsed);
+      pageContent.classList.toggle('md:ml-72', !collapsed);
+      pageContent.classList.toggle('md:ml-20', collapsed);
+      labels.forEach((label) => label.classList.toggle('hidden', collapsed));
+    });
+
+    // Script de Busca Instantânea
+    const searchInput = document.getElementById('searchInput');
+    const searchItems = document.querySelectorAll('.search-item');
+    const noResults = document.getElementById('noResults');
+
+    searchInput.addEventListener('input', (e) => {
+      const term = e.target.value.toLowerCase().trim();
+      let visibleCount = 0;
+
+      searchItems.forEach(item => {
+        const name = item.getAttribute('data-name');
+        if (name.includes(term)) {
+          item.classList.remove('hidden');
+          visibleCount++;
+        } else {
+          item.classList.add('hidden');
+        }
+      });
+
+      // Controla a exibição da mensagem de "Nenhum resultado"
+      if (visibleCount === 0 && searchItems.length > 0) {
+        noResults.classList.remove('hidden');
+      } else {
+        noResults.classList.add('hidden');
+      }
+    });
+  </script>
+</body>
+</html>
