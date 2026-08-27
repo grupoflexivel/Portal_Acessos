@@ -281,7 +281,6 @@ def admin_nao_superuser_required(user):
         )
     )
 
-
 @user_passes_test(
     admin_nao_superuser_required,
     login_url="usuarios:home"
@@ -323,8 +322,9 @@ def cadastrar_recurso_admin(request):
                     "Link/Arquivo para o Centro de Custo cadastrado com sucesso!"
                 )
 
+            # Redireciona para o gerenciamento de recursos
             return redirect(
-                "usuarios:cadastrar_recurso"
+                "usuarios:gerenciar_recursos"
             )
 
     else:
@@ -542,3 +542,133 @@ def excluir_usuario(request, usuario_id):
     return redirect(
         "usuarios:listar_usuarios"
     )
+
+@login_required
+def gerenciar_recursos(request):
+    if not (request.user.is_staff or request.user.is_superuser):
+        raise PermissionDenied("Apenas administradores podem gerenciar recursos.")
+    # Busca todas as ferramentas e adiciona uma tag identificadora
+    ferramentas = Ferramenta.objects.all()
+    lista_ferramentas = []
+    for f in ferramentas:
+        lista_ferramentas.append({
+            'id': f.id,
+            'nome': f.nome,
+            'url': f.url,
+            'arquivo': f.arquivo,
+            'local': f"Centro de Custo ({f.centro_custo.codigo})",
+            'tipo_origem': 'ferramenta'
+        })
+
+    # Busca todos os links úteis e adiciona a tag identificadora
+    links = LinkUtil.objects.all()
+    lista_links = []
+    for l in links:
+        lista_links.append({
+            'id': l.id,
+            'nome': l.nome,
+            'url': l.url,
+            'arquivo': l.arquivo,
+            'local': "Espaço Colaboradores",
+            'tipo_origem': 'link'
+        })
+
+    # Junta as duas listas em uma só e ordena por ID decrescente (mais recentes primeiro)
+    recursos_unificados = sorted(
+        lista_ferramentas + lista_links, 
+        key=lambda x: x['id'], 
+        reverse=True
+    )
+
+    return render(request, 'usuarios/gerenciar_recursos.html', {'recursos': recursos_unificados})
+
+
+@login_required
+def editar_recurso(request, tipo, pk):
+    if not (request.user.is_staff or request.user.is_superuser):
+        raise PermissionDenied("Apenas administradores podem editar recursos.")
+    # Identifica o modelo correto com base no tipo que veio da URL
+    if tipo == 'ferramenta':
+        recurso = get_object_or_404(Ferramenta, pk=pk)
+        tipo_inicial = 'centro_custo'
+    elif tipo == 'link':
+        recurso = get_object_or_404(LinkUtil, pk=pk)
+        tipo_inicial = 'colaborador'
+    else:
+        messages.error(request, "Tipo de recurso inválido.")
+        return redirect('usuarios:gerenciar_recursos')
+
+    if request.method == 'POST':
+        form = CadastroRecursoForm(request.POST, request.FILES)
+        if form.is_valid():
+            tipo_destino = form.cleaned_data['tipo_destino']
+            nome = form.cleaned_data['nome']
+            centro_custo = form.cleaned_data['centro_custo']
+            arquivo = form.cleaned_data['arquivo']
+            url = form.cleaned_data['url']
+
+            recurso.nome = nome
+            recurso.url = url if url else ''
+            if arquivo:
+                recurso.arquivo = arquivo
+            
+            if tipo_destino == 'centro_custo':
+                if isinstance(recurso, Ferramenta):
+                    recurso.centro_custo = centro_custo
+                    recurso.save()
+                else:
+                    LinkUtil.objects.filter(pk=pk).delete()
+                    Ferramenta.objects.create(
+                        nome=nome,
+                        centro_custo=centro_custo,
+                        url=url,
+                        arquivo=arquivo if arquivo else None
+                    )
+            else:
+                # Se virou colaborador (geral)
+                if isinstance(recurso, LinkUtil):
+                    recurso.save()
+                else:
+                    # Se era Ferramenta e mudou para LinkUtil, apagamos a ferramenta e criamos o LinkUtil
+                    Ferramenta.objects.filter(pk=pk).delete()
+                    LinkUtil.objects.create(
+                        nome=nome,
+                        url=url,
+                        arquivo=arquivo if arquivo else None
+                    )
+
+            messages.success(request, f"O recurso '{nome}' foi atualizado com sucesso!")
+            return redirect('usuarios:gerenciar_recursos')
+    else:
+        # Preenche o formulário com os dados atuais do recurso para exibição
+        dados_iniciais = {
+            'tipo_destino': tipo_inicial,
+            'nome': recurso.nome,
+            'url': recurso.url if hasattr(recurso, 'url') else '',
+            'centro_custo': getattr(recurso, 'centro_custo', None),
+        }
+        form = CadastroRecursoForm(initial=dados_iniciais)
+
+    context = {
+        'form': form,
+        'recurso': recurso,
+        'tipo': tipo,
+    }
+    return render(request, 'usuarios/editar_recurso.html', context)
+
+@login_required
+def excluir_recurso(request, tipo, pk):
+    if not request.user.is_superuser:
+        raise PermissionDenied("Apenas administradores podem excluir recursos.")
+    if tipo == 'ferramenta':
+        recurso = get_object_or_404(Ferramenta, pk=pk)
+    elif tipo == 'link':
+        recurso = get_object_or_404(LinkUtil, pk=pk)
+    else:
+        messages.error(request, "Tipo de recurso inválido.")
+        return redirect('usuarios:gerenciar_recursos')
+
+    nome = recurso.nome
+    recurso.delete()
+    messages.success(request, f"O recurso '{nome}' foi excluído com sucesso!")
+    return redirect('usuarios:gerenciar_recursos')

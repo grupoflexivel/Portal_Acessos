@@ -1,0 +1,117 @@
+{% load static %}
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Gerenciar Recursos | Grupo Flexível</title>
+  <link rel="icon" type="image/png" href="{% static 'usuarios/images/Grupo Flexível_icon_color_X.png' %}">
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-slate-100 text-slate-900">
+  <div class="min-h-screen md:flex">
+    
+    {% include "usuarios/includes/sidebar.html" %}
+
+    <!-- CONTEÚDO PRINCIPAL -->
+    <main id="page-content" class="flex-1 p-6 transition-all duration-300 md:ml-72 md:p-10">
+      <div class="mx-auto max-w-6xl">
+        
+        <header class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <a href="{% url 'usuarios:home' %}" class="text-sm font-medium text-[#00776d] hover:underline">&larr; Voltar para o Início</a>
+            <h1 class="mt-2 text-2xl font-bold tracking-tight text-slate-900">Gerenciar Recursos</h1>
+            <p class="mt-1 text-sm text-slate-600">Visualize, edite ou exclua os links e arquivos cadastrados no sistema.</p>
+          </div>
+        </header>
+
+        {% include "usuarios/includes/toast_messages.html" %}
+
+        <section class="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="border-b border-slate-200 bg-slate-50 text-xs font-semibold uppercase tracking-wider text-slate-600">
+                  <th class="p-4">Nome</th>
+                  <th class="p-4">Link / Arquivo</th>
+                  <th class="p-4">Local</th>
+                  <th class="p-4 text-center">Ações</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-200 text-sm">
+                {% for recurso in recursos %}
+                  <tr class="hover:bg-slate-50/50 transition">
+                    <!-- Nome -->
+                    <td class="p-4 font-medium text-slate-900">{{ recurso.nome }}</td>
+                    <!-- Link ou Arquivo -->
+                    <td class="p-4 text-slate-600 truncate max-w-xs">
+                      {% if recurso.url %}
+                        <a href="{{ recurso.url }}" target="_blank" class="text-[#00776d] hover:underline truncate block">{{ recurso.url }}</a>
+                      {% elif recurso.arquivo %}
+                        <a href="{{ recurso.arquivo.url }}" target="_blank" class="text-[#00776d] hover:underline truncate block">📄 Ver arquivo enviado</a>
+                      {% else %}
+                        <span class="text-slate-400">Nenhum</span>
+                      {% endif %}
+                    </td>
+
+                    <!-- Espaço Colaboradores ou Centro de Custos -->
+                    <td class="p-4 text-slate-600">
+                      <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-700">
+                        {{ recurso.local }}
+                      </span>
+                    </td>
+
+                    <!-- Ações -->
+                    <td class="p-4 text-center">
+                      <div class="inline-flex items-center justify-center gap-2">
+                        <!-- Botão de Editar -->
+                        <a href="{% url 'usuarios:editar_recurso' recurso.tipo_origem recurso.id %}" title="Editar" class="p-2 rounded-lg text-slate-500 hover:text-[#00776d] hover:bg-slate-100 transition">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                        </a>
+
+                        <!-- Botão de Excluir -->
+                        {% if user.is_superuser %}
+                            <a href="{% url 'usuarios:excluir_recurso' recurso.tipo_origem recurso.id %}" onclick="return confirm('Deseja realmente excluir o recurso \'{{ recurso.nome }}\'?');" title="Excluir" class="p-2 rounded-lg text-rose-500 hover:text-rose-700 hover:bg-rose-50 transition">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            </a>
+                        {% endif %}
+                      </div>
+                    </td>
+                  </tr>
+                {% empty %}
+                  <tr>
+                    <td colspan="4" class="p-8 text-center text-slate-500">
+                      Nenhum recurso cadastrado até o momento.
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // Script da Sidebar
+    const sidebar = document.getElementById('sidebar');
+    const pageContent = document.getElementById('page-content');
+    const toggle = document.getElementById('sidebar-toggle');
+    const labels = document.querySelectorAll('.sidebar-label');
+
+    if (toggle) {
+      toggle.addEventListener('click', () => {
+        const collapsed = toggle.getAttribute('aria-expanded') === 'true';
+        toggle.setAttribute('aria-expanded', String(!collapsed));
+        sidebar.classList.toggle('md:w-72', !collapsed);
+        sidebar.classList.toggle('md:w-20', collapsed);
+        pageContent.classList.toggle('md:ml-72', !collapsed);
+        pageContent.classList.toggle('md:ml-20', collapsed);
+        labels.forEach((label) => label.classList.toggle('hidden', collapsed));
+      });
+    }
+  </script>
+</body>
+</html>

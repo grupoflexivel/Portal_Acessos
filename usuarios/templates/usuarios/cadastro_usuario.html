@@ -95,7 +95,7 @@
 
     if (toggle && sidebar) {
       toggle.addEventListener('click', () => {
-        const collapsed = toggle.getAttribute('aria-expanded'] === 'true';
+        const collapsed = toggle.getAttribute('aria-expanded') === 'true';
         toggle.setAttribute('aria-expanded', String(!collapsed));
         toggle.setAttribute('aria-label', collapsed ? 'Expandir menu' : 'Recolher menu');
         toggle.setAttribute('title', collapsed ? 'Expandir menu' : 'Recolher menu');

@@ -17,6 +17,9 @@ urlpatterns = [
     path("usuarios/", views.listar_usuarios, name="listar_usuarios"),
     path("usuarios/<int:usuario_id>/editar/", views.editar_usuario, name="editar_usuario"),
     path("usuarios/<int:usuario_id>/excluir/", views.excluir_usuario, name="excluir_usuario",),
+    path('recursos/gerenciar/', views.gerenciar_recursos, name='gerenciar_recursos'),
+    path('recursos/editar/<str:tipo>/<int:pk>/', views.editar_recurso, name='editar_recurso'),
+    path('recursos/excluir/<str:tipo>/<int:pk>/', views.excluir_recurso, name='excluir_recurso'),
 ]
 
 if settings.DEBUG:
