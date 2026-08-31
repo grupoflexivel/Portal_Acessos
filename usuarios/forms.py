@@ -286,8 +286,15 @@ class FuncionarioEdicaoForm(forms.ModelForm):
 
     def clean(self):
         cleaned_data = super().clean()
+        vinculado_ad = cleaned_data.get("vinculado_ad")
         nova_senha = cleaned_data.get("nova_senha")
         confirmar_senha = cleaned_data.get("confirmar_senha")
+
+        # Se for usuário do AD e tentou digitar algo nos campos de senha
+        if vinculado_ad and (nova_senha or confirmar_senha):
+            raise forms.ValidationError(
+                "Cadastro vinculado ao AD, não será possível alterar a senha por aqui"
+            )
 
         if not nova_senha and not confirmar_senha:
             return cleaned_data
@@ -307,11 +314,12 @@ class FuncionarioEdicaoForm(forms.ModelForm):
         funcionario = super().save(commit=False)
         nova_senha = self.cleaned_data.get("nova_senha")
         
-        if nova_senha:
-            funcionario.set_password(nova_senha)
-            funcionario.deve_trocar_senha = False
-        elif funcionario.vinculado_ad:
+        # Se estiver vinculado ao AD, garante senha inutilizável
+        if funcionario.vinculado_ad:
             funcionario.set_unusable_password()
+            funcionario.deve_trocar_senha = False
+        elif nova_senha:
+            funcionario.set_password(nova_senha)
             funcionario.deve_trocar_senha = False
 
         if commit:

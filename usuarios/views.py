@@ -274,7 +274,8 @@ class PasswordChangeView(auth_views.PasswordChangeView):
     form_class = AlterarSenhaForm
 
     def dispatch(self, request, *args, **kwargs):
-        if request.user.is_authenticated and request.user.vinculado_ad:
+        # Bloqueia o acesso se o usuário estiver autenticado e vinculado ao AD
+        if request.user.is_authenticated and getattr(request.user, "vinculado_ad", False):
             messages.info(
                 request,
                 "Sua senha é gerenciada pelo Active Directory. "
@@ -494,24 +495,37 @@ def editar_usuario(request, usuario_id):
         )
 
         if form.is_valid():
-            # Usamos commit=False para tratar as travas de segurança caso a conta seja reativada
-            usuario = form.save(commit=False)
+            # Verifica se o usuário já é vinculado ou se marcou a opção no form
+            vinculado_ad_atual = getattr(usuario, "vinculado_ad", False)
+            vinculado_ad_form = form.cleaned_data.get("vinculado_ad", False)
 
-            if usuario.ativo:
-                usuario.is_active = True
-                usuario.tentativas_falhas = 0
-                usuario.bloqueado_ate = None
+            # Se houver campo de senha no formulário de edição e tentar alterar com AD ativo:
+            # (Caso seu form tenha campos de senha, adicione a checagem aqui)
+            if (vinculado_ad_atual or vinculado_ad_form) and "password" in form.changed_data:
+                form.add_error(
+                    None,
+                    ValidationError(
+                        "Cadastro vinculado ao AD, não será possível alterar a senha por aqui"
+                    )
+                )
+            else:
+                usuario = form.save(commit=False)
 
-            usuario.save()
+                if usuario.ativo:
+                    usuario.is_active = True
+                    usuario.tentativas_falhas = 0
+                    usuario.bloqueado_ate = None
 
-            messages.success(
-                request,
-                f"Colaborador {usuario.nome or usuario.username} atualizado com sucesso!"
-            )
+                usuario.save()
 
-            return redirect(
-                "usuarios:listar_usuarios"
-            )
+                messages.success(
+                    request,
+                    f"Colaborador {usuario.nome or usuario.username} atualizado com sucesso!"
+                )
+
+                return redirect(
+                    "usuarios:listar_usuarios"
+                )
 
     else:
         form = FuncionarioEdicaoForm(
