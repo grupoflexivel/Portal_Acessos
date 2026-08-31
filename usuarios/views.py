@@ -6,6 +6,7 @@ from django.core.exceptions import PermissionDenied, ValidationError
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.utils import timezone
+from django.contrib.auth import update_session_auth_hash
 
 from .forms import (
     AlterarSenhaForm,
@@ -249,6 +250,11 @@ class PrimeiroAcessoTrocarSenha(auth_views.PasswordChangeView):
     success_url = reverse_lazy("usuarios:home")
     form_class = AlterarSenhaForm
 
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated and request.user.vinculado_ad:
+            return redirect("usuarios:home")
+        return super().dispatch(request, *args, **kwargs)
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context.update(_contexto_sidebar(self.request.user))
@@ -256,6 +262,7 @@ class PrimeiroAcessoTrocarSenha(auth_views.PasswordChangeView):
 
     def form_valid(self, form):
         response = super().form_valid(form)
+        update_session_auth_hash(self.request, form.user)
         self.request.user.deve_trocar_senha = False
         self.request.user.save(update_fields=["deve_trocar_senha"])
         return response
@@ -275,6 +282,11 @@ class PasswordChangeView(auth_views.PasswordChangeView):
             )
             return redirect("usuarios:home")
         return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        update_session_auth_hash(self.request, form.user)
+        return response
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

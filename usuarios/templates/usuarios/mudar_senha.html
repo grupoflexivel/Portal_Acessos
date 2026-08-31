@@ -95,33 +95,35 @@
     const toggle = document.getElementById('sidebar-toggle');
     const labels = document.querySelectorAll('.sidebar-label');
 
-    toggle.addEventListener('click', () => {
-      const collapsed = toggle.getAttribute('aria-expanded') === 'true';
-      toggle.setAttribute('aria-expanded', String(!collapsed));
-      toggle.setAttribute('aria-label', collapsed ? 'Expandir menu' : 'Recolher menu');
-      toggle.setAttribute('title', collapsed ? 'Expandir menu' : 'Recolher menu');
-      sidebar.classList.toggle('md:w-72', !collapsed);
-      sidebar.classList.toggle('md:w-20', collapsed);
-      pageContent.classList.toggle('md:ml-72', !collapsed);
-      pageContent.classList.toggle('md:ml-20', collapsed);
-      labels.forEach((label) => label.classList.toggle('hidden', collapsed));
-    });
+    if (toggle && sidebar && pageContent) {
+      toggle.addEventListener('click', () => {
+        const collapsed = toggle.getAttribute('aria-expanded') === 'true';
+        toggle.setAttribute('aria-expanded', String(!collapsed));
+        toggle.setAttribute('aria-label', collapsed ? 'Expandir menu' : 'Recolher menu');
+        toggle.setAttribute('title', collapsed ? 'Expandir menu' : 'Recolher menu');
+        sidebar.classList.toggle('md:w-72', !collapsed);
+        sidebar.classList.toggle('md:w-20', collapsed);
+        pageContent.classList.toggle('md:ml-72', !collapsed);
+        pageContent.classList.toggle('md:ml-20', collapsed);
+        labels.forEach((label) => label.classList.toggle('hidden', collapsed));
+      });
+    }
 
-    // Script para alternar a visibilidade de todos os campos de senha da página
+    // Script para alternar visibilidade de senha
     document.querySelectorAll(".toggle-password").forEach(button => {
       button.addEventListener("click", () => {
         const inputId = button.getAttribute("data-target");
         const passwordInput = document.getElementById(inputId);
+        if (!passwordInput) return;
         const eyeOpen = button.querySelector(".eye-open");
         const eyeClosed = button.querySelector(".eye-closed");
 
         const senhaVisivel = passwordInput.type === "text";
         passwordInput.type = senhaVisivel ? "password" : "text";
         button.setAttribute("aria-pressed", String(!senhaVisivel));
-        button.setAttribute("aria-label", senhaVisivel ? "Mostrar senha" : "Ocultar senha");
         
-        eyeOpen.classList.toggle("hidden", !senhaVisivel);
-        eyeClosed.classList.toggle("hidden", senhaVisivel);
+        if (eyeOpen) eyeOpen.classList.toggle("hidden", !senhaVisivel);
+        if (eyeClosed) eyeClosed.classList.toggle("hidden", senhaVisivel);
       });
     });
   </script>
