@@ -126,6 +126,12 @@ class Funcionario(AbstractUser):
     )
     ativo = models.BooleanField(default=True)
     deve_trocar_senha = models.BooleanField(default=False)
+    vinculado_ad = models.BooleanField(
+        default=False,
+        verbose_name="Vinculado ao Active Directory",
+        help_text="Quando marcado, o login é autenticado no Active Directory em vez da senha local.",
+
+    )
 
     # --- NOVOS CAMPOS PARA CONTROLE DE SEGURANÇA (BLOQUEIO POR SENHA) ---
     tentativas_falhas = models.PositiveIntegerField(default=0)

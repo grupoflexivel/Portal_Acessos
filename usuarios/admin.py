@@ -7,18 +7,18 @@ from .models import CentroCusto, Ferramenta, Funcionario, LinkUtil, UnidadeFabri
 @admin.register(Funcionario)
 class FuncionarioAdmin(UserAdmin):
     list_display = (
-        "username", "nome", "centro_custo", "unidade_fabril", "departamento", "ativo", "is_staff", "email",
+        "username", "nome", "centro_custo", "unidade_fabril", "departamento", "ativo", "is_staff", "vinculado_ad", "email",
     )
     list_filter = (
-        "ativo", "is_staff", "is_superuser", "centro_custo", "unidade_fabril", "departamento", "email",
+        "ativo", "is_staff", "is_superuser", "vinculado_ad", "centro_custo", "unidade_fabril", "departamento", "email",
     )
     search_fields = ("username", "nome", "email")
     ordering = ("nome",)
     fieldsets = UserAdmin.fieldsets + (
-        ("Dados corporativos", {"fields": ("nome", "unidade_fabril", "centro_custo", "departamento", "ativo")}),
+        ("Dados corporativos", {"fields": ("nome", "unidade_fabril", "centro_custo", "departamento", "ativo", "vinculado_ad")}),
     )
     add_fieldsets = UserAdmin.add_fieldsets + (
-        ("Dados corporativos", {"fields": ("nome", "unidade_fabril", "centro_custo", "departamento", "ativo")}),
+        ("Dados corporativos", {"fields": ("nome", "unidade_fabril", "centro_custo", "departamento", "ativo", "vinculado_ad")}),
     )
 
 

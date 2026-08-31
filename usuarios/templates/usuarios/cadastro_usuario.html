@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Cadastrar colaborador | Grupo Flexível</title>
+  <title>flexxHub | Cadastrar colaborador</title>
   <link rel="icon" type="image/png" href="{% static 'usuarios/images/Grupo Flexível_icon_color_X.png' %}">
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
@@ -36,7 +36,7 @@
 
             {% for field in form %}
               <div>
-                {% if field.name == 'ativo' %}
+                {% if field.name == 'ativo' or field.name == 'vinculado_ad' %}
                   <label class="flex cursor-pointer items-center gap-3 rounded-xl border border-slate-200 p-4 text-sm font-medium text-slate-700">
                     {{ field }} <span>{{ field.label }}</span>
                   </label>

@@ -1,4 +1,4 @@
-﻿from django.contrib.auth.forms import PasswordChangeForm, UserCreationForm
+﻿from django.contrib.auth.forms import PasswordChangeForm
 from django import forms
 from .models import CentroCusto, Funcionario
 import unicodedata
@@ -14,15 +14,21 @@ class FuncionarioCadastroForm(forms.ModelForm):
             "centro_custo",
             "departamento",
             "ativo",
+            "vinculado_ad",
         )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for nome, campo in self.fields.items():
-            if nome == "ativo":
+            if nome in ("ativo", "vinculado_ad"):
                 campo.widget.attrs["class"] = "h-4 w-4 rounded border-slate-300 text-[#00776d] focus:ring-[#00776d]"
             else:
                 campo.widget.attrs["class"] = "w-full rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-[#00776d] focus:ring-4 focus:ring-emerald-700/10"
+
+            if isinstance(campo, forms.ModelChoiceField):
+                campo.empty_label = "-- Selecione uma opção --"
+            elif isinstance(campo, forms.ChoiceField) and not campo.required:
+                campo.choices = [("", "Selecione uma opção")] + [c for c in campo.choices if c[0] != ""]
 
     def clean_email(self):
         email = self.cleaned_data.get("email")
@@ -35,15 +41,12 @@ class FuncionarioCadastroForm(forms.ModelForm):
         if not nome:
             return nome
         
-        # Converte para maiúsculas logo na validação
         nome_maiusculo = nome.upper()
-        
         if Funcionario.objects.filter(nome__iexact=nome_maiusculo).exists():
             raise forms.ValidationError("Já existe um colaborador cadastrado com exatamente este nome.")
         return nome_maiusculo
 
     def _gerar_username(self, nome_completo):
-        """Transforma 'João da Silva' em 'joao.silva' de forma única."""
         nfkd = unicodedata.normalize('NFKD', nome_completo)
         nome_limpo = "".join([c for c in nfkd if not unicodedata.combining(c)]).lower()
         
@@ -67,14 +70,16 @@ class FuncionarioCadastroForm(forms.ModelForm):
 
     def save(self, commit=True):
         funcionario = super().save(commit=False)
-        
-        # O nome já vem em maiúsculo do clean_nome
         funcionario.username = self._gerar_username(funcionario.nome)
-        
-        senha_padrao = "Flex@123"
-        funcionario.set_password(senha_padrao)
-        funcionario.deve_trocar_senha = True  
-        
+
+        if funcionario.vinculado_ad:
+            funcionario.set_unusable_password()
+            funcionario.deve_trocar_senha = False
+        else:
+            senha_padrao = "MudarSenha123"
+            funcionario.set_password(senha_padrao)
+            funcionario.deve_trocar_senha = True
+
         if commit:
             funcionario.save()
         return funcionario
@@ -144,6 +149,14 @@ class CadastroRecursoForm(forms.Form):
         label="Link da URL (Externo)"
     )
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for nome, campo in self.fields.items():
+            if isinstance(campo, forms.ModelChoiceField):
+                campo.empty_label = "-- Selecione uma opção --"
+            elif isinstance(campo, forms.ChoiceField) and not campo.required:
+                campo.choices = [("", "-- Selecione uma opção --")] + [c for c in campo.choices if c[0] != ""]
+
     def clean(self):
         cleaned_data = super().clean()
         tipo = cleaned_data.get('tipo_destino')
@@ -210,8 +223,8 @@ class FuncionarioEdicaoForm(forms.ModelForm):
             "departamento",
             "ativo",
             "is_staff",
+            "vinculado_ad",
         ]
-        
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -230,10 +243,13 @@ class FuncionarioEdicaoForm(forms.ModelForm):
         )
 
         for nome, campo in self.fields.items():
-            if nome in ["ativo", "is_staff"]:
+            if nome in ["ativo", "is_staff", "vinculado_ad"]:
                 campo.widget.attrs["class"] = checkbox
             elif nome not in ["nova_senha", "confirmar_senha"]:
                 campo.widget.attrs["class"] = campo_padrao
+
+            if isinstance(campo, forms.ModelChoiceField):
+                campo.empty_label = "-- Selecione uma opção --"
 
         self.fields["username"].label = "Usuário"
         self.fields["nome"].label = "Nome"
@@ -243,6 +259,11 @@ class FuncionarioEdicaoForm(forms.ModelForm):
         self.fields["departamento"].label = "Departamento"
         self.fields["ativo"].label = "Usuário ativo"
         self.fields["is_staff"].label = "Staff"
+        self.fields["vinculado_ad"].label = "Vinculado ao Active Directory"
+        self.fields["vinculado_ad"].help_text = (
+            "O usuário informado acima deve ser exatamente igual ao login "
+            "de rede (sAMAccountName) do colaborador no AD."
+        )
 
     def clean_nome(self):
         nome = self.cleaned_data.get("nome")
@@ -252,7 +273,6 @@ class FuncionarioEdicaoForm(forms.ModelForm):
 
     def clean(self):
         cleaned_data = super().clean()
-
         nova_senha = cleaned_data.get("nova_senha")
         confirmar_senha = cleaned_data.get("confirmar_senha")
 
@@ -272,10 +292,14 @@ class FuncionarioEdicaoForm(forms.ModelForm):
 
     def save(self, commit=True):
         funcionario = super().save(commit=False)
-
         nova_senha = self.cleaned_data.get("nova_senha")
+        
         if nova_senha:
             funcionario.set_password(nova_senha)
+            funcionario.deve_trocar_senha = False
+        elif funcionario.vinculado_ad:
+            funcionario.set_unusable_password()
+            funcionario.deve_trocar_senha = False
 
         if commit:
             funcionario.save()

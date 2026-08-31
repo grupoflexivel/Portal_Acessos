@@ -5,7 +5,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Editar colaborador | Grupo Flexível</title>
+    <title>flexxHub | Editar Usuário</title>
     <link rel="icon" type="image/png" href="{% static 'usuarios/images/Grupo Flexível_icon_color_X.png' %}">
 
     <script src="https://cdn.tailwindcss.com"></script>
@@ -117,21 +117,22 @@
                         </div>
 
                         <!-- ACESSOS E PERMISSÕES -->
-                        <div>
-                            <div class="mb-5 border-b border-slate-200 pb-3">
-                                <h2 class="text-lg font-bold text-slate-900">Acessos e permissões</h2>
-                                <p class="mt-1 text-sm text-slate-500">Controle o status do colaborador e os acessos administrativos.</p>
-                            </div>
-                            <div class="grid gap-4 md:grid-cols-2">
+                        {% if request.user.is_superuser %}
+                            <div>
+                                <div class="mb-5 border-b border-slate-200 pb-3">
+                                    <h2 class="text-lg font-bold text-slate-900">Acessos e permissões</h2>
+                                    <p class="mt-1 text-sm text-slate-500">Controle o status do colaborador e os acessos administrativos.</p>
+                                </div>
+                                <div class="grid gap-4 md:grid-cols-2">
 
                                 <!-- USUÁRIO ATIVO -->
                                 <label class="flex cursor-pointer items-center justify-between gap-5 rounded-xl border border-slate-200 bg-slate-50 p-5 transition hover:border-[#00776d]/40 hover:bg-emerald-50/30">
 
-                                    <div>
-                                        <p class="font-semibold text-slate-800">Usuário ativo</p>
-                                        <p class="mt-1 text-xs leading-relaxed text-slate-500">Permite que o colaborador acesse o portal.</p>
-                                    </div>
-                                    <div class="shrink-0">{{ form.ativo }}</div>
+                                <div>
+                                    <p class="font-semibold text-slate-800">Usuário ativo</p>
+                                    <p class="mt-1 text-xs leading-relaxed text-slate-500">Permite que o colaborador acesse o portal.</p>
+                                </div>
+                                <div class="shrink-0">{{ form.ativo }}</div>
                                 </label>
 
                                 <!-- STAFF -->
@@ -142,9 +143,18 @@
                                     </div>
                                     <div class="shrink-0">{{ form.is_staff }}</div>
                                 </label>
+
+                                <!-- VINCULADO AO AD -->
+                                <label class="flex cursor-pointer items-center justify-between gap-5 rounded-xl border border-slate-200 bg-slate-50 p-5 transition hover:border-[#00776d]/40 hover:bg-emerald-50/30 md:col-span-2">
+                                    <div>
+                                        <p class="font-semibold text-slate-800">Vinculado ao Active Directory</p>
+                                        <p class="mt-1 text-xs leading-relaxed text-slate-500">{{ form.vinculado_ad.help_text }}</p>
+                                    </div>
+                                    <div class="shrink-0">{{ form.vinculado_ad }}</div>
+                                </label>
                             </div>
                         </div>
-
+                        {% endif %}
                         <!-- SENHA -->
                         <div>
                             <div class="mb-5 border-b border-slate-200 pb-3">

@@ -266,6 +266,16 @@ class PasswordChangeView(auth_views.PasswordChangeView):
     success_url = reverse_lazy("usuarios:home")
     form_class = AlterarSenhaForm
 
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated and request.user.vinculado_ad:
+            messages.info(
+                request,
+                "Sua senha é gerenciada pelo Active Directory. "
+                "Fale com o TI para alterá-la.",
+            )
+            return redirect("usuarios:home")
+        return super().dispatch(request, *args, **kwargs)
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context.update(_contexto_sidebar(self.request.user))
@@ -556,7 +566,7 @@ def gerenciar_recursos(request):
             'nome': f.nome,
             'url': f.url,
             'arquivo': f.arquivo,
-            'local': f"Centro de Custo ({f.centro_custo.codigo})",
+            'local': f"Centro de Custo ({f.centro_custo.codigo} - {f.centro_custo.descricao})",
             'tipo_origem': 'ferramenta'
         })
 
