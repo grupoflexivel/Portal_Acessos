@@ -1,6 +1,24 @@
+from datetime import timedelta
 from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.utils import timezone
+
+ICONE_RECURSO_CHOICES = [
+    ("link", "Link"),
+    ("globe", "Site / Internet"),
+    ("document", "Documento"),
+    ("folder", "Pasta / Arquivos"),
+    ("dashboard", "Dashboard / BI"),
+    ("chart", "Gráfico / Relatórios"),
+    ("computer", "Sistema / Aplicação"),
+    ("database", "Banco de dados"),
+    ("email", "E-mail"),
+    ("users", "Usuários"),
+    ("support", "Suporte"),
+    ("shield", "Segurança"),
+    ("settings", "Configurações"),
+]
 
 
 class UnidadeFabril(models.Model):
@@ -42,6 +60,10 @@ class Ferramenta(models.Model):
     # Opção 2: Link externo da web
     url = models.URLField(max_length=500, blank=True, null=True)
 
+    logo = models.ImageField(upload_to="ferramentas/logos/", blank=True, null=True, verbose_name="Logo personalizada",)
+    
+    icone = models.CharField(max_length=30, choices=ICONE_RECURSO_CHOICES, blank=True, default="", verbose_name="Ícone",)
+
     class Meta:
         verbose_name = "Ferramenta / Recurso"
         verbose_name_plural = "Links/Arquivos Centro de Custos"
@@ -67,6 +89,10 @@ class LinkUtil(models.Model):
     
     # Opção 2: Link externo da web
     url = models.URLField(max_length=500, blank=True, null=True)
+
+    logo = models.ImageField(upload_to="links_uteis/logos/", blank=True, null=True, verbose_name="Logo personalizada",)
+    
+    icone = models.CharField(max_length=30, choices=ICONE_RECURSO_CHOICES, blank=True, default="", verbose_name="Ícone",)
 
     class Meta:
         verbose_name = "Links Colaboradores"
@@ -95,10 +121,6 @@ class Departamento(models.Model):
 
     def __str__(self):
         return self.nome
-
-
-from django.utils import timezone
-from datetime import timedelta
 
 class Funcionario(AbstractUser):
     nome = models.CharField(max_length=255)

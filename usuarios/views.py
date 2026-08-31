@@ -307,12 +307,17 @@ def cadastrar_recurso_admin(request):
             nome = form.cleaned_data["nome"]
             arquivo = form.cleaned_data["arquivo"]
             url = form.cleaned_data["url"]
+            logo = form.cleaned_data['logo']
+            icone = form.cleaned_data['icone']
 
             if tipo == "colaborador":
                 LinkUtil.objects.create(
                     nome=nome,
                     arquivo=arquivo,
-                    url=url
+                    url=url,
+                    logo=logo,
+                    icone=icone
+
                 )
                 messages.success(
                     request,
@@ -325,7 +330,9 @@ def cadastrar_recurso_admin(request):
                     centro_custo=centro_custo,
                     nome=nome,
                     arquivo=arquivo,
-                    url=url
+                    url=url,
+                    logo=logo,
+                    icone=icone
                 )
                 messages.success(
                     request,
@@ -616,9 +623,15 @@ def editar_recurso(request, tipo, pk):
             centro_custo = form.cleaned_data['centro_custo']
             arquivo = form.cleaned_data['arquivo']
             url = form.cleaned_data['url']
+            logo = form.cleaned_data['logo']
+            icone = form.cleaned_data['icone']
 
             recurso.nome = nome
             recurso.url = url if url else ''
+            if logo:
+                recurso.logo = logo
+            if icone:
+                recurso.icone = icone
             if arquivo:
                 recurso.arquivo = arquivo
             
@@ -632,7 +645,9 @@ def editar_recurso(request, tipo, pk):
                         nome=nome,
                         centro_custo=centro_custo,
                         url=url,
-                        arquivo=arquivo if arquivo else None
+                        arquivo=arquivo if arquivo else None,
+                        logo=logo,
+                        icone=icone
                     )
             else:
                 # Se virou colaborador (geral)
@@ -644,7 +659,9 @@ def editar_recurso(request, tipo, pk):
                     LinkUtil.objects.create(
                         nome=nome,
                         url=url,
-                        arquivo=arquivo if arquivo else None
+                        arquivo=arquivo if arquivo else None,
+                        logo=logo,
+                        icone=icone
                     )
 
             messages.success(request, f"O recurso '{nome}' foi atualizado com sucesso!")
@@ -656,6 +673,7 @@ def editar_recurso(request, tipo, pk):
             'nome': recurso.nome,
             'url': recurso.url if hasattr(recurso, 'url') else '',
             'centro_custo': getattr(recurso, 'centro_custo', None),
+            'icone': getattr(recurso, 'icone', ''),
         }
         form = CadastroRecursoForm(initial=dados_iniciais)
 

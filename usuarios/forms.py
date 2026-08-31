@@ -1,7 +1,7 @@
-﻿from django.contrib.auth.forms import PasswordChangeForm
+﻿import unicodedata
 from django import forms
-from .models import CentroCusto, Funcionario
-import unicodedata
+from django.contrib.auth.forms import PasswordChangeForm
+from .models import (CentroCusto, Funcionario, ICONE_RECURSO_CHOICES,)
 
 
 class FuncionarioCadastroForm(forms.ModelForm):
@@ -149,6 +149,19 @@ class CadastroRecursoForm(forms.Form):
         label="Link da URL (Externo)"
     )
 
+    logo = forms.ImageField(
+        required=False,
+        label="Logo personalizada",
+        widget=forms.ClearableFileInput(attrs={"accept": ("image/png," "image/jpeg," "image/webp," "image/gif"), "class": ("w-full text-sm text-slate-500 " "file:mr-4 file:py-2 file:px-4 " "file:rounded-xl file:border-0 " "file:text-sm file:font-semibold " "file:bg-emerald-50 " "file:text-[#00776d] " "hover:file:bg-emerald-100 " "cursor-pointer"),}),
+    )
+    
+    icone = forms.ChoiceField(
+        choices=[("", "Selecione um ícone padrão")] + ICONE_RECURSO_CHOICES,
+        required=False,
+        widget=forms.Select(attrs={'class': 'w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 shadow-sm focus:border-[#00776d] focus:outline-none focus:ring-1 focus:ring-[#00776d]'}),
+        label="Ícone Padrão",
+    )
+    
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for nome, campo in self.fields.items():
