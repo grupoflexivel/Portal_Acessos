@@ -176,17 +176,20 @@ class CadastroRecursoForm(forms.Form):
     logo = forms.ImageField(
         required=False,
         label="Logo personalizada",
-        widget=forms.ClearableFileInput(
+        widget=forms.FileInput(  
             attrs={
                 "accept": "image/png,image/jpeg,image/webp,image/gif",
-                "class": (
-                    "w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 "
-                    "file:rounded-xl file:border-0 file:text-sm file:font-semibold "
-                    "file:bg-emerald-50 file:text-[#00776d] hover:file:bg-emerald-100 cursor-pointer"
-                ),
+                "class": "w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-[#00776d]/10 file:text-[#00776d] hover:file:bg-[#00776d]/20 cursor-pointer",
             }
         ),
     )
+
+    remover_logo = forms.CharField(
+        required=False, 
+        widget=forms.HiddenInput(
+        )
+    )
+
     icone = forms.ChoiceField(
         choices=[("", "Selecione um ícone padrão")] + ICONE_RECURSO_CHOICES,
         required=False,
@@ -199,10 +202,12 @@ class CadastroRecursoForm(forms.Form):
         super().__init__(*args, **kwargs)
         self.fields["grupos"].queryset = GrupoEspaco.objects.filter(ativo=True).order_by("nome")
 
-        if not self.is_bound and not recurso:
-            grupo_todos = GrupoEspaco.objects.filter(nome__iexact="Todos", ativo=True).first()
-            if grupo_todos:
-                self.initial.setdefault("grupos", [grupo_todos.pk])
+        if recurso and not self.is_bound:
+            self.initial.setdefault("nome", recurso.nome)
+            self.initial.setdefault("url", recurso.url)
+            self.initial.setdefault("icone", recurso.icone)
+            self.initial.setdefault("logo", recurso.logo) 
+            self.initial.setdefault("grupos", recurso.grupos.values_list("pk", flat=True))
 
     def clean(self):
         cleaned_data = super().clean()

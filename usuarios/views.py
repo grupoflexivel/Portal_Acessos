@@ -17,7 +17,7 @@ from .forms import (
     FuncionarioEdicaoForm,
     GrupoEspacoForm,
 )
-from .models import (CentroCusto, Departamento, Ferramenta, Funcionario, GrupoEspaco, LinkUtil, UnidadeFabril,)
+from .models import (CentroCusto, Departamento, Ferramenta, Funcionario, GrupoEspaco, UnidadeFabril,)
 
 class LoginView(auth_views.LoginView):
     template_name = "usuarios/login.html"
@@ -140,16 +140,6 @@ def logout_view(request):
         next_page=reverse_lazy("usuarios:login")
     )(request)
 
-
-def _grupo_todos():
-    """Retorna o grupo universal (Espaço Geral). Compatível com 'Todos' legado."""
-    from django.db.models import Q
-    return GrupoEspaco.objects.filter(
-        Q(nome__iexact="Espaço Geral"),
-        ativo=True
-    ).first()
-
-
 def _usuario_tem_acesso_total(user):
     if user.is_superuser:
         return True
@@ -175,10 +165,7 @@ def _recursos_do_grupo(grupo):
     ferramentas = list(
         Ferramenta.objects.filter(grupos=grupo).prefetch_related("grupos").order_by("nome")
     )
-    links = list(
-        LinkUtil.objects.filter(grupos=grupo).prefetch_related("grupos").order_by("nome")
-    )
-    recursos = ferramentas + links
+    recursos = ferramentas
     recursos.sort(key=lambda item: item.nome.casefold())
     return recursos
 
@@ -286,25 +273,45 @@ def _exigir_superuser(user):
 
 
 @user_passes_test(admin_required, login_url="usuarios:home")
-def cadastrar_recurso_admin(request):
+def cadastrar_recurso_admin(request, recurso_id=None):
+    recurso = None
+    if recurso_id:
+        recurso = get_object_or_404(Ferramenta, pk=recurso_id)
+
     if request.method == "POST":
-        form = CadastroRecursoForm(request.POST, request.FILES)
+        form = CadastroRecursoForm(request.POST, request.FILES, recurso=recurso)
+        print("FORM É VÁLIDO?", form.is_valid())
+        print("ERROS DO FORMULÁRIO:", form.errors)
         if form.is_valid():
-            recurso = Ferramenta.objects.create(
-                nome=form.cleaned_data["nome"],
-                arquivo=form.cleaned_data["arquivo"],
-                url=form.cleaned_data["url"],
-                logo=form.cleaned_data["logo"],
-                icone=form.cleaned_data["icone"],
-            )
-            recurso.grupos.set(form.cleaned_data["grupos"])
-            messages.success(request, f"Recurso '{recurso.nome}' cadastrado com sucesso!")
+
+            if recurso:
+                # MODO EDIÇÃO
+                recurso.nome = form.cleaned_data["nome"]
+                recurso.url = form.cleaned_data["url"]
+                recurso.icone = form.cleaned_data["icone"]
+
+                # Tratamento para limpar ou atualizar a LOGO
+                if form.cleaned_data.get("remover_logo") == "sim":
+                    if recurso.logo:
+                        recurso.logo.delete(save=False)
+                    recurso.logo = None
+                    print("--> LOGO FOI DEFINIDA COMO NONE NO OBJETO <---")
+                elif form.cleaned_data.get("logo"):
+                    recurso.logo = form.cleaned_data["logo"]
+
+                recurso.save()
+                print("--- RECURSO SALVO NO BANCO COM SUCESSO ---")
+                
+                recurso.grupos.set(form.cleaned_data["grupos"])
+                messages.success(request, f"Recurso '{recurso.nome}' atualizado com sucesso!")
+            
             return redirect("usuarios:gerenciar_recursos")
     else:
         form = CadastroRecursoForm()
 
     context = _contexto_sidebar(request.user)
     context["form"] = form
+    context["recurso"] = recurso
     return render(request, "usuarios/cadastrar_recurso.html", context)
 
 
@@ -456,18 +463,6 @@ def gerenciar_recursos(request):
             }
         )
 
-    for recurso in LinkUtil.objects.prefetch_related("grupos").all():
-        recursos.append(
-            {
-                "id": recurso.id,
-                "nome": recurso.nome,
-                "url": recurso.url,
-                "arquivo": recurso.arquivo,
-                "grupos": list(recurso.grupos.all()),
-                "tipo_origem": "link",
-            }
-        )
-
     recursos.sort(key=lambda x: (x["nome"].casefold(), x["tipo_origem"]))
     context = _contexto_sidebar(request.user)
     context["recursos"] = recursos
@@ -481,8 +476,6 @@ def editar_recurso(request, tipo, pk):
 
     if tipo == "ferramenta":
         recurso = get_object_or_404(Ferramenta.objects.prefetch_related("grupos"), pk=pk)
-    elif tipo == "link":
-        recurso = get_object_or_404(LinkUtil.objects.prefetch_related("grupos"), pk=pk)
     else:
         messages.error(request, "Tipo de recurso inválido.")
         return redirect("usuarios:gerenciar_recursos")
@@ -502,8 +495,13 @@ def editar_recurso(request, tipo, pk):
                 recurso.url = nova_url
                 recurso.arquivo = None
 
-            if nova_logo:
+            if form.cleaned_data.get("remover_logo") == "sim":
+                if recurso.logo:
+                    recurso.logo.delete(save=False)
+                recurso.logo = None
+            elif nova_logo:
                 recurso.logo = nova_logo
+
             recurso.icone = form.cleaned_data["icone"] or ""
             recurso.save()
             recurso.grupos.set(form.cleaned_data["grupos"])
@@ -545,8 +543,6 @@ def excluir_recurso(request, tipo, pk):
 
     if tipo == "ferramenta":
         recurso = get_object_or_404(Ferramenta, pk=pk)
-    elif tipo == 'link':
-        recurso = get_object_or_404(LinkUtil, pk=pk)
     else:
         messages.error(request, "Tipo de recurso inválido.")
         return redirect('usuarios:gerenciar_recursos')
@@ -583,12 +579,11 @@ def gerenciar_grupos(request):
         GrupoEspaco.objects.annotate(
             total_usuarios=Count("funcionarios", distinct=True),
             total_ferramentas=Count("ferramentas", distinct=True),
-            total_links=Count("links_uteis", distinct=True),
         )
         .order_by("nome")
     )
     for grupo in grupos:
-        grupo.total_recursos = grupo.total_ferramentas + grupo.total_links
+        grupo.total_recursos = grupo.total_ferramentas
 
     context = _contexto_sidebar(request.user)
     context["grupos"] = grupos
@@ -625,7 +620,7 @@ def excluir_grupo(request, grupo_id):
         messages.error(request, "O Espaço Geral é estrutural e não pode ser excluído.")
         return redirect("usuarios:gerenciar_grupos")
 
-    if grupo.funcionarios.exists() or grupo.ferramentas.exists() or grupo.links_uteis.exists():
+    if grupo.funcionarios.exists() or grupo.ferramentas.exists():
         messages.error(
             request,
             "Este Grupo/Espaço possui usuários ou recursos vinculados. Remova os vínculos antes de excluí-lo.",

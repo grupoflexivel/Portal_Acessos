@@ -120,20 +120,35 @@
               <label class="mb-1.5 block text-sm font-medium text-slate-700">
                 {{ form.logo.label }}
               </label>
+
+              {{ form.remover_logo }}
+
               {% if recurso.logo %}
-                <div class="mb-2 flex w-fit items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-2">
-                  <img src="{{ recurso.logo.url }}" alt="{{ recurso.nome }}" class="h-8 w-8 object-contain">
-                  <span class="text-xs text-slate-600">Logo atual</span>
+                <div id="container-logo-atual" class="relative mb-3 flex w-fit items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-2.5 shadow-sm {% if form.remover_logo.value == 'sim' %}hidden{% endif %}">
+                  <img src="{{ recurso.logo.url }}" alt="{{ recurso.nome }}" class="h-9 w-9 object-contain">
+                  <span class="text-xs font-medium text-slate-600">Logo atual</span>
+                  
+                  <button type="button" onclick="removerLogoAtual()" class="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full bg-rose-600 text-xs font-bold text-white shadow-md hover:bg-rose-700 transition cursor-pointer" title="Remover logo">
+                    &times;
+                  </button>
                 </div>
               {% endif %}
-              {{ form.logo }}
+
+              <div id="wrapper-input-logo" class="{% if recurso.logo and form.remover_logo.value != 'sim' %}hidden{% endif %}">
+                {{ form.logo }}
+              </div>
+
+              <div id="btn-trocar-novamente" class="mt-2 {% if not recurso.logo or form.remover_logo.value == 'sim' %}hidden{% endif %}">
+                <button type="button" onclick="mostrarInputLogo()" class="text-xs font-medium text-[#00776d] hover:underline">
+                  + Enviar uma nova logo
+                </button>
+              </div>
+
               <p class="mt-1 text-xs text-slate-500">
-                Opcional. Substitui o ícone padrão caso seja enviada.
+                Opcional. Formatos aceitos: PNG, JPEG, WEBP ou GIF.
               </p>
               {% for error in form.logo.errors %}
-                <p class="mt-1 text-sm text-red-600">
-                  {{ error }}
-                </p>
+                <p class="mt-1 text-sm text-rose-600">{{ error }}</p>
               {% endfor %}
             </div>
 
@@ -365,6 +380,41 @@
       selectIcone.addEventListener('change', updatePreview);
       updatePreview();
     });
+
+    // REMOVER LOGO ATUAL VIA BOTÃO X
+    function removerLogoAtual() {
+      const container = document.getElementById('container-logo-atual');
+      const inputRemover = document.getElementById('id_remover_logo');
+      const wrapperInput = document.getElementById('wrapper-input-logo');
+      const btnTrocar = document.getElementById('btn-trocar-novamente');
+      const inputLogoFile = document.getElementById('id_logo'); 
+
+      if (inputRemover) {
+        inputRemover.value = 'sim';
+        console.log("ID encontrado! Novo valor:", inputRemover.value);
+      } else {
+        console.error("ERRO: Elemento id_remover_logo não encontrado no DOM!");
+      }
+  
+      if (container) container.classList.add('hidden');
+      if (wrapperInput) wrapperInput.classList.remove('hidden');
+      if (btnTrocar) btnTrocar.classList.add('hidden');
+  
+      if (inputLogoFile) {
+        inputLogoFile.value = '';
+      }
+    }
+
+    // MOSTRAR INPUT DE LOGO SE QUISER TROCAR
+    function mostrarInputLogo() {
+      const wrapperInput = document.getElementById('wrapper-input-logo');
+      const btnTrocar = document.getElementById('btn-trocar-novamente');
+      const inputRemover = document.getElementById('id_remover_logo');
+
+      if (wrapperInput) wrapperInput.classList.remove('hidden');
+      if (btnTrocar) btnTrocar.classList.add('hidden');
+      if (inputRemover) inputRemover.value = '';
+    }
   </script>
 </body>
 </html>

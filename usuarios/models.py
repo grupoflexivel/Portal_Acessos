@@ -72,17 +72,6 @@ class GrupoEspaco(models.Model):
 
 
 class Ferramenta(models.Model):
-    # CAMPO LEGADO:
-    # Mantido temporariamente para evitar uma remoção destrutiva antes da migração
-    # dos dados antigos. O sistema novo NÃO usa centro_custo para autorização.
-    centro_custo = models.ForeignKey(
-        CentroCusto,
-        on_delete=models.SET_NULL,
-        related_name="ferramentas",
-        null=True,
-        blank=True,
-        editable=False,
-    )
 
     grupos = models.ManyToManyField(
         GrupoEspaco,
@@ -111,53 +100,6 @@ class Ferramenta(models.Model):
     class Meta:
         verbose_name = "Ferramenta / Recurso"
         verbose_name_plural = "Ferramentas / Recursos"
-        ordering = ("nome",)
-
-    def __str__(self):
-        return self.nome
-
-    def clean(self):
-        super().clean()
-        if not self.arquivo and not self.url:
-            raise ValidationError("Você deve preencher o campo de URL ou enviar um arquivo.")
-        if self.arquivo and self.url:
-            raise ValidationError("Preencha apenas um: ou o arquivo ou o link da URL, não ambos.")
-
-
-class LinkUtil(models.Model):
-    """Modelo legado de recursos gerais.
-
-    Ele é mantido para compatibilidade com os registros existentes. A partir desta
-    alteração, também recebe grupos/espaços e participa da mesma regra de acesso.
-    Novos recursos são cadastrados preferencialmente em Ferramenta.
-    """
-
-    grupos = models.ManyToManyField(
-        GrupoEspaco,
-        related_name="links_uteis",
-        blank=True,
-        verbose_name="Grupos/Espaços",
-    )
-    nome = models.CharField(max_length=255)
-    arquivo = models.FileField(upload_to="links_uteis/", blank=True, null=True)
-    url = models.URLField(max_length=500, blank=True, null=True)
-    logo = models.ImageField(
-        upload_to="links_uteis/logos/",
-        blank=True,
-        null=True,
-        verbose_name="Logo personalizada",
-    )
-    icone = models.CharField(
-        max_length=30,
-        choices=ICONE_RECURSO_CHOICES,
-        blank=True,
-        default="",
-        verbose_name="Ícone",
-    )
-
-    class Meta:
-        verbose_name = "Link legado"
-        verbose_name_plural = "Links legados"
         ordering = ("nome",)
 
     def __str__(self):
