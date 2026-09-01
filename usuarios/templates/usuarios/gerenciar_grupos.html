@@ -24,11 +24,7 @@
           <a href="{% url 'usuarios:cadastrar_grupo' %}" class="rounded-xl bg-[#00776d] px-4 py-2.5 text-sm font-semibold text-white">Novo Grupo/Espaço</a>
         </div>
 
-        {% if messages %}
-          {% for message in messages %}
-            <div class="mb-4 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm">{{ message }}</div>
-          {% endfor %}
-        {% endif %}
+        {% include "usuarios/includes/toast_messages.html" %}
 
         <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
           <table class="min-w-full divide-y divide-slate-200">
