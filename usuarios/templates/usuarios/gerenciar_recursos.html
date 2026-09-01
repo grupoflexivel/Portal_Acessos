@@ -23,6 +23,14 @@
             <h1 class="mt-2 text-2xl font-bold tracking-tight text-slate-900">Gerenciar Recursos</h1>
             <p class="mt-1 text-sm text-slate-600">Visualize, edite ou exclua os links e arquivos cadastrados no sistema.</p>
           </div>
+          <div>
+            <a href="{% url 'usuarios:cadastrar_recurso' %}" class="inline-flex items-center gap-2 rounded-xl bg-[#00776d] px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-[#005f56] transition">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15"></path>
+              </svg>
+              Cadastrar Novo Recurso
+            </a>
+          </div>
         </header>
 
         {% include "usuarios/includes/toast_messages.html" %}
@@ -34,7 +42,7 @@
                 <tr class="border-b border-slate-200 bg-slate-50 text-xs font-semibold uppercase tracking-wider text-slate-600">
                   <th class="p-4">Nome</th>
                   <th class="p-4">Link / Arquivo</th>
-                  <th class="p-4">Local</th>
+                  <th class="p-4">Grupos/Espaços</th>
                   <th class="p-4 text-center">Ações</th>
                 </tr>
               </thead>
@@ -43,6 +51,7 @@
                   <tr class="hover:bg-slate-50/50 transition">
                     <!-- Nome -->
                     <td class="p-4 font-medium text-slate-900">{{ recurso.nome }}</td>
+                    
                     <!-- Link ou Arquivo -->
                     <td class="p-4 text-slate-600 truncate max-w-xs">
                       {% if recurso.url %}
@@ -54,11 +63,17 @@
                       {% endif %}
                     </td>
 
-                    <!-- Espaço Colaboradores ou Centro de Custos -->
+                    <!-- Grupos / Espaços -->
                     <td class="p-4 text-slate-600">
-                      <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-700">
-                        {{ recurso.local }}
-                      </span>
+                      <div class="flex flex-wrap gap-2">
+                        {% for grupo in recurso.grupos %}
+                          <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-700">
+                            {{ grupo.nome }}
+                          </span>
+                        {% empty %}
+                          <span class="text-xs text-slate-400">Nenhum grupo vinculado</span>
+                        {% endfor %}
+                      </div>
                     </td>
 
                     <!-- Ações -->
@@ -66,14 +81,26 @@
                       <div class="inline-flex items-center justify-center gap-2">
                         <!-- Botão de Editar -->
                         <a href="{% url 'usuarios:editar_recurso' recurso.tipo_origem recurso.id %}" title="Editar" class="p-2 rounded-lg text-slate-500 hover:text-[#00776d] hover:bg-slate-100 transition">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+                          </svg>
                         </a>
 
                         <!-- Botão de Excluir -->
                         {% if user.is_superuser %}
-                            <a href="{% url 'usuarios:excluir_recurso' recurso.tipo_origem recurso.id %}" onclick="return confirm('Deseja realmente excluir o recurso \'{{ recurso.nome }}\'?');" title="Excluir" class="p-2 rounded-lg text-rose-500 hover:text-rose-700 hover:bg-rose-50 transition">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                            </a>
+                          <form method="post" action="{% url 'usuarios:excluir_recurso' recurso.tipo_origem recurso.id %}" class="inline-flex" onsubmit="return confirm('Deseja realmente excluir o recurso \'{{ recurso.nome|escapejs }}\'?');">
+                            {% csrf_token %}
+                            <button
+                              type="submit"
+                              title="Excluir"
+                              aria-label="Excluir recurso"
+                              class="p-2 rounded-lg text-rose-500 hover:text-rose-700 hover:bg-rose-50 transition"
+                            >
+                              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                              </svg>
+                            </button>
+                          </form>
                         {% endif %}
                       </div>
                     </td>

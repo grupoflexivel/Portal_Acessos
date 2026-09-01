@@ -57,13 +57,13 @@
                                 <input type="text" id="input-busca" name="busca" value="{{ busca }}" placeholder="Pesquisar por nome, usuário ou e-mail..." class="w-full min-w-0 rounded-xl border border-slate-300 bg-white py-3 pl-12 pr-4 text-sm outline-none transition focus:border-[#00776d] focus:ring-4 focus:ring-emerald-700/10">
                             </div>
 
-                            {% if busca or empresa_selecionada or centro_custo_selecionado or departamento_selecionado or status_selecionado %}
+                            {% if busca or empresa_selecionada or centro_custo_selecionado or departamento_selecionado or grupo_selecionado or status_selecionado %}
                                 <a href="{% url 'usuarios:listar_usuarios' %}" class="shrink-0 rounded-xl border border-slate-300 bg-white px-6 py-3 text-center text-sm font-semibold text-slate-700 transition hover:bg-slate-50">Limpar filtros</a>
                             {% endif %}
                         </div>
 
                         <!-- Linha Inferior: Selects Avançados -->
-                        <div class="grid grid-cols-1 gap-3 sm:grid-cols-4">
+                        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
                             <!-- Empresa -->
                             <div>
                                 <select name="empresa" class="auto-submit w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-700 outline-none transition focus:border-[#00776d] focus:ring-4 focus:ring-emerald-700/10">
@@ -80,6 +80,16 @@
                                     <option value="">Todos os Centros de Custo</option>
                                     {% for cc in centros_custo %}
                                         <option value="{{ cc.id }}" {% if centro_custo_selecionado == cc.id|stringformat:"s" %}selected{% endif %}>{{ cc.descricao }} ({{ cc.codigo }})</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <!-- Grupos/Espaços -->
+                            <div>
+                                <select name="grupo" class="auto-submit w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-700 outline-none transition focus:border-[#00776d] focus:ring-4 focus:ring-emerald-700/10">
+                                    <option value="">Todos os Grupos/Espaços</option>
+                                    {% for grupo in grupos_filtro %}
+                                        <option value="{{ grupo.id }}" {% if grupo_selecionado == grupo.id|stringformat:"s" %}selected{% endif %}>{{ grupo.nome }}</option>
                                     {% endfor %}
                                 </select>
                             </div>

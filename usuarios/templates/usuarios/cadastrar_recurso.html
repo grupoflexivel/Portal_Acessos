@@ -25,113 +25,234 @@
 
         {% include "usuarios/includes/toast_messages.html" %}
 
+        <!-- FORMULÁRIO -->
         <section class="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
           <form method="post" enctype="multipart/form-data" class="space-y-5">
             {% csrf_token %}
 
+            <!-- ERROS GERAIS -->
             {% if form.non_field_errors %}
               <div class="rounded-xl bg-rose-50 border border-rose-200 p-4 text-sm font-medium text-rose-700">
                 {{ form.non_field_errors }}
               </div>
             {% endif %}
 
+            <!-- TIPO DE DESTINO -->
             <div>
               <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ form.tipo_destino.label }}</label>
               {{ form.tipo_destino }}
-              {{ form.tipo_destino.errors }}
+              {% for error in form.tipo_destino.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ error }}</p>
+              {% endfor %}
             </div>
 
-            <div id="campo-cc" class="hidden">
-              <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ form.centro_custo.label }}</label>
-              {{ form.centro_custo }}
-              {{ form.centro_custo.errors }}
-            </div>
-
+            <!-- NOME DO RECURSO -->
             <div>
-              <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ form.nome.label }}</label>
+              <label class="block text-sm font-medium text-slate-700 mb-1.5">
+                {{ form.nome.label }}
+              </label>
               {{ form.nome }}
-              {{ form.nome.errors }}
+              {% for error in form.nome.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ error }}</p>
+              {% endfor %}
             </div>
 
+            <!-- GRUPOS / ESPAÇOS -->
             <div>
-              <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ form.arquivo.label }}</label>
+              <label class="block text-sm font-medium text-slate-700 mb-1.5">
+                {{ form.grupos.label }}
+              </label>
+
+              <div id="grupos-dropdown" class="relative">
+                <button
+                  type="button"
+                  id="grupos-toggle"
+                  aria-expanded="false"
+                  class="flex w-full items-center justify-between gap-3 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-left text-sm text-slate-700 shadow-sm transition hover:border-slate-400 focus:border-[#00776d] focus:outline-none focus:ring-2 focus:ring-[#00776d]/20"
+                >
+                  <span id="grupos-label" class="min-w-0 flex-1 truncate">
+                    Selecione os grupos
+                  </span>
+                  <svg
+                    id="grupos-arrow"
+                    class="h-4 w-4 shrink-0 text-slate-500 transition-transform duration-200"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke-width="2"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M19 9l-7 7-7-7"
+                    />
+                  </svg>
+                </button>
+
+                <div
+                  id="grupos-menu"
+                  class="absolute left-0 right-0 z-50 mt-2 hidden max-h-64 overflow-y-auto rounded-xl border border-slate-200 bg-white py-1 shadow-xl"
+                >
+                  {% for grupo in form.grupos.field.queryset %}
+                    <label
+                      class="flex cursor-pointer items-center gap-3 px-4 py-2.5 transition hover:bg-slate-50"
+                    >
+                      <input
+                        type="checkbox"
+                        name="grupos"
+                        value="{{ grupo.pk }}"
+                        data-nome="{{ grupo.nome }}"
+                        class="grupo-checkbox h-4 w-4 rounded border-slate-300 text-[#00776d] focus:ring-[#00776d]"
+                        {% if grupo.pk in form.grupos.initial %}
+                          checked
+                        {% endif %}
+                      >
+                      <span class="flex-1 text-sm font-medium text-slate-700">
+                        {{ grupo.nome }}
+                      </span>
+                      {% if grupo.nome|lower == 'todos' %}
+                        <span class="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-500">
+                          Global
+                        </span>
+                      {% endif %}
+                    </label>
+                  {% empty %}
+                    <div class="px-4 py-3 text-sm text-slate-500">
+                      Nenhum Grupo/Espaço disponível.
+                    </div>
+                  {% endfor %}
+                </div>
+              </div>
+
+              <p class="mt-1 text-xs text-slate-500">Selecione um ou mais Grupos/Espaços nos quais este recurso ficará disponível.</p>
+
+              {% for error in form.grupos.errors %}
+                <p class="mt-1 text-sm text-red-600">
+                  {{ error }}
+                </p>
+              {% endfor %}
+            </div>
+
+            <!-- ARQUIVO -->
+            <div>
+              <label class="mb-1.5 block text-sm font-medium text-slate-700">
+                {{ form.arquivo.label }}
+              </label>
               {{ form.arquivo }}
-              <p class="mt-1 text-xs text-slate-500">Opcional. Envie um arquivo PDF, imagem, planilha, etc.</p>
-              {{ form.arquivo.errors }}
+              <p class="mt-1 text-xs text-slate-500">
+                Opcional. Envie um arquivo PDF, imagem, planilha, etc.
+              </p>
+              {% for error in form.arquivo.errors %}
+                <p class="mt-1 text-sm text-red-600">
+                  {{ error }}
+                </p>
+              {% endfor %}
             </div>
 
+            <!-- URL -->
             <div>
-              <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ form.url.label }}</label>
+              <label class="mb-1.5 block text-sm font-medium text-slate-700">
+                {{ form.url.label }}
+              </label>
               {{ form.url }}
-              <p class="mt-1 text-xs text-slate-500">Opcional. Insira a URL web (caso não envie arquivo).</p>
-              {{ form.url.errors }}
+              <p class="mt-1 text-xs text-slate-500">
+                Opcional. Insira a URL web (caso não envie arquivo).
+              </p>
+              {% for error in form.url.errors %}
+                <p class="mt-1 text-sm text-red-600">
+                  {{ error }}
+                </p>
+              {% endfor %}
             </div>
 
-            <!-- SEÇÃO DE IDENTIFICAÇÃO VISUAL (LOGO OU ÍCONE) -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-3 border-t border-slate-100">
+            <!-- IDENTIFICAÇÃO VISUAL -->
+            <div class="space-y-5 border-t border-slate-200 pt-6">
+              <div class="rounded-2xl border border-emerald-200 bg-emerald-50 p-5">
+                <h3 class="text-sm font-semibold text-[#00776d]">Personalização Visual</h3>
+                <p class="mt-1 text-xs text-slate-600">
+                  Envie uma logo personalizada ou escolha um ícone padrão para identificar o recurso.
+                </p>
+              </div>
+
+              <!-- LOGO -->
               <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ form.logo.label }}</label>
+                <label class="mb-1.5 block text-sm font-medium text-slate-700">
+                  {{ form.logo.label }}
+                </label>
                 {{ form.logo }}
-                <p class="mt-1 text-xs text-slate-500">Opcional. Envie uma logo pequena.</p>
-                {{ form.logo.errors }}
+                <p class="mt-1 text-xs text-slate-500">
+                  Opcional. Envie uma logo pequena (PNG, JPG, WebP ou GIF).
+                </p>
+                {% for error in form.logo.errors %}
+                  <p class="mt-1 text-sm text-red-600">
+                    {{ error }}
+                  </p>
+                {% endfor %}
               </div>
+
+              <!-- ÍCONE -->
               <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ form.icone.label }}</label>
+                <label class="mb-1.5 block text-sm font-medium text-slate-700">
+                  {{ form.icone.label }}
+                </label>
                 {{ form.icone }}
-                <p class="mt-1 text-xs text-slate-500">Se não houver logo, selecione um ícone.</p>
-                {{ form.icone.errors }}
+                <p class="mt-1 text-xs text-slate-500">
+                  Se não houver logo, selecione um ícone padrão.
+                </p>
+                {% for error in form.icone.errors %}
+                  <p class="mt-1 text-sm text-red-600">
+                    {{ error }}
+                  </p>
+                {% endfor %}
               </div>
             </div>
 
-            <div class="pt-4 flex items-center justify-end gap-3">
-              <a href="{% url 'usuarios:home' %}" class="rounded-xl border border-slate-300 px-5 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50">Cancelar</a>
-              <button type="submit" class="rounded-xl bg-[#00776d] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#005f56]">Salvar Recurso</button>
+            <!-- BOTÕES -->
+            <div class="flex items-center justify-end gap-3 pt-4">
+              <a href="{% url 'usuarios:gerenciar_recursos' %}" class="rounded-xl border border-slate-300 px-5 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50">
+                Cancelar
+              </a>
+              <button type="submit" class="rounded-xl bg-[#00776d] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#005f56]">
+                Salvar Recurso
+              </button>
             </div>
           </form>
         </section>
+
       </div>
     </main>
   </div>
 
   <script>
-    // Script da Sidebar (Recolher/Expandir)
+    // SIDEBAR
     const sidebar = document.getElementById('sidebar');
     const pageContent = document.getElementById('page-content');
     const toggle = document.getElementById('sidebar-toggle');
     const labels = document.querySelectorAll('.sidebar-label');
 
-    toggle.addEventListener('click', () => {
-      const collapsed = toggle.getAttribute('aria-expanded') === 'true';
-      toggle.setAttribute('aria-expanded', String(!collapsed));
-      toggle.setAttribute('aria-label', collapsed ? 'Expandir menu' : 'Recolher menu');
-      toggle.setAttribute('title', collapsed ? 'Expandir menu' : 'Recolher menu');
-      sidebar.classList.toggle('md:w-72', !collapsed);
-      sidebar.classList.toggle('md:w-20', collapsed);
-      pageContent.classList.toggle('md:ml-72', !collapsed);
-      pageContent.classList.toggle('md:ml-20', collapsed);
-      labels.forEach((label) => label.classList.toggle('hidden', collapsed));
-    });
+    if (toggle && sidebar && pageContent) {
+      toggle.addEventListener('click', () => {
+        const collapsed = toggle.getAttribute('aria-expanded') === 'true';
 
-    // Script para mostrar/esconder o select de Centro de Custo dinamicamente
-    const tipoSelect = document.getElementById('id_tipo_destino');
-    const campoCC = document.getElementById('campo-cc');
+        toggle.setAttribute('aria-expanded', String(!collapsed));
+        toggle.setAttribute('aria-label', collapsed ? 'Expandir menu' : 'Recolher menu');
+        toggle.setAttribute('title', collapsed ? 'Expandir menu' : 'Recolher menu');
 
-    function toggleCentroCusto() {
-      if (tipoSelect && tipoSelect.value === 'centro_custo') {
-        campoCC.classList.remove('hidden');
-      } else if (campoCC) {
-        campoCC.classList.add('hidden');
-      }
+        sidebar.classList.toggle('md:w-72', !collapsed);
+        sidebar.classList.toggle('md:w-20', collapsed);
+        pageContent.classList.toggle('md:ml-72', !collapsed);
+        pageContent.classList.toggle('md:ml-20', collapsed);
+
+        labels.forEach(label => {
+          label.classList.toggle('hidden', collapsed);
+        });
+      });
     }
 
-    if (tipoSelect) {
-      tipoSelect.addEventListener('change', toggleCentroCusto);
-      toggleCentroCusto();
-    }
-
-    // Estilização padrão do Tailwind nos campos gerados automaticamente pelo form Django
     document.addEventListener('DOMContentLoaded', () => {
       const inputs = document.querySelectorAll('input[type="text"], input[type="url"], select');
+
       inputs.forEach(el => {
         if (!el.classList.contains('w-full')) {
           el.className = 'w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-800 shadow-sm focus:border-[#00776d] focus:outline-none focus:ring-1 focus:ring-[#00776d]';
@@ -139,50 +260,124 @@
       });
     });
 
-  // Adiciona a pré-visualização do ícone dinamicamente ao lado/dentro do select nativo
-  document.addEventListener('DOMContentLoaded', () => {
-    const selectIcone = document.getElementById('id_icone');
-    if (!selectIcone) return;
+    // DROPDOWN MÚLTIPLO DE GRUPOS / ESPAÇOS
+    document.addEventListener('DOMContentLoaded', () => {
+      const dropdown = document.getElementById('grupos-dropdown');
+      const gruposToggle = document.getElementById('grupos-toggle');
+      const gruposMenu = document.getElementById('grupos-menu');
+      const gruposLabel = document.getElementById('grupos-label');
+      const gruposArrow = document.getElementById('grupos-arrow');
 
-    const iconSvgs = {
-      'globe': '<svg class="w-5 h-5 text-[#00776d]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>',
-      'document': '<svg class="w-5 h-5 text-[#00776d]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>',
-      'folder': '<svg class="w-5 h-5 text-[#00776d]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path></svg>',
-      'dashboard': '<svg class="w-5 h-5 text-[#00776d]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>',
-      'chart': '<svg class="w-5 h-5 text-[#00776d]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>',
-      'computer': '<svg class="w-5 h-5 text-[#00776d]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>',
-      'database': '<svg class="w-5 h-5 text-[#00776d]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"></path></svg>',
-      'email': '<svg class="w-5 h-5 text-[#00776d]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>',
-      'users': '<svg class="w-5 h-5 text-[#00776d]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>',
-      'support': '<svg class="w-5 h-5 text-[#00776d]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>',
-      'shield': '<svg class="w-5 h-5 text-[#00776d]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>',
-      'settings': '<svg class="w-5 h-5 text-[#00776d]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>'
-    };
+      if (!dropdown || !gruposToggle || !gruposMenu || !gruposLabel) {
+        return;
+      }
 
-    // Cria um container flexível para envolver o select nativo e o preview do ícone
-    const wrapper = document.createElement('div');
-    wrapper.className = 'relative flex items-center';
-    
-    // Insere o wrapper antes do select e move o select para dentro dele
-    selectIcone.parentNode.insertBefore(wrapper, selectIcone);
-    wrapper.appendChild(selectIcone);
-    
-    // Ajusta o padding esquerdo do select para abrir espaço para o ícone
-    selectIcone.style.paddingLeft = '2.75rem';
+      const checkboxes = Array.from(gruposMenu.querySelectorAll('.grupo-checkbox'));
 
-    // Cria o elemento visual onde o SVG será renderizado
-    const iconPreview = document.createElement('div');
-    iconPreview.className = 'absolute left-3 flex items-center pointer-events-none';
-    wrapper.appendChild(iconPreview);
+      function atualizarLabel() {
+        const selecionados = checkboxes
+          .filter(checkbox => checkbox.checked)
+          .map(checkbox => checkbox.dataset.nome);
 
-    function updatePreview() {
-      const val = selectIcone.value;
-      iconPreview.innerHTML = iconSvgs[val] || '';
-    }
+        if (selecionados.length === 0) {
+          gruposLabel.textContent = 'Selecione os grupos';
+          return;
+        }
 
-    selectIcone.addEventListener('change', updatePreview);
-    updatePreview(); // Executa ao carregar caso já venha preenchido (no editar)
-  });
+        if (selecionados.length <= 3) {
+          gruposLabel.textContent = selecionados.join(', ');
+          return;
+        }
+
+        gruposLabel.textContent = `${selecionados.length} grupos selecionados`;
+      }
+
+      function abrirDropdown() {
+        gruposMenu.classList.remove('hidden');
+        gruposToggle.setAttribute('aria-expanded', 'true');
+        if (gruposArrow) {
+          gruposArrow.classList.add('rotate-180');
+        }
+      }
+
+      function fecharDropdown() {
+        gruposMenu.classList.add('hidden');
+        gruposToggle.setAttribute('aria-expanded', 'false');
+        if (gruposArrow) {
+          gruposArrow.classList.remove('rotate-180');
+        }
+      }
+
+      gruposToggle.addEventListener('click', event => {
+        event.stopPropagation();
+        const estaAberto = gruposToggle.getAttribute('aria-expanded') === 'true';
+
+        if (estaAberto) {
+          fecharDropdown();
+        } else {
+          abrirDropdown();
+        }
+      });
+
+      checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', atualizarLabel);
+      });
+
+      document.addEventListener('click', event => {
+        if (!dropdown.contains(event.target)) {
+          fecharDropdown();
+        }
+      });
+
+      document.addEventListener('keydown', event => {
+        if (event.key === 'Escape') {
+          fecharDropdown();
+        }
+      });
+
+      atualizarLabel();
+    });
+
+    // PRÉ-VISUALIZAÇÃO DO ÍCONE
+    document.addEventListener('DOMContentLoaded', () => {
+      const selectIcone = document.getElementById('id_icone');
+
+      if (!selectIcone) {
+        return;
+      }
+
+      const iconSvgs = {
+        'globe': '<svg class="w-5 h-5 text-[#00776d]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>',
+        'document': '<svg class="w-5 h-5 text-[#00776d]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>',
+        'folder': '<svg class="w-5 h-5 text-[#00776d]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path></svg>',
+        'chart': '<svg class="w-5 h-5 text-[#00776d]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>',
+        'computer': '<svg class="w-5 h-5 text-[#00776d]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>',
+        'database': '<svg class="w-5 h-5 text-[#00776d]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"></path></svg>',
+        'email': '<svg class="w-5 h-5 text-[#00776d]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>',
+        'users': '<svg class="w-5 h-5 text-[#00776d]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>',
+        'support': '<svg class="w-5 h-5 text-[#00776d]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636l3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>',
+        'shield': '<svg class="w-5 h-5 text-[#00776d]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>',
+        'settings': '<svg class="w-5 h-5 text-[#00776d]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>'
+      };
+
+      const wrapper = document.createElement('div');
+      wrapper.className = 'relative flex items-center';
+      selectIcone.parentNode.insertBefore(wrapper, selectIcone);
+      wrapper.appendChild(selectIcone);
+      selectIcone.style.paddingLeft = '2.75rem';
+
+      const iconPreview = document.createElement('div');
+      iconPreview.className = 'pointer-events-none absolute left-3 flex items-center';
+      wrapper.appendChild(iconPreview);
+
+      function updatePreview() {
+        const val = selectIcone.value;
+        iconPreview.innerHTML = iconSvgs[val] || '';
+      }
+
+      selectIcone.addEventListener('change', updatePreview);
+      updatePreview();
+    });
   </script>
 </body>
 </html>

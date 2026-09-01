@@ -1,60 +1,27 @@
 {% load static %}
 
-<aside
-  id="sidebar"
-  class="flex h-screen w-full flex-col bg-[#004b46] text-white transition-all duration-300 md:fixed md:inset-y-0 md:w-72 overflow-hidden"
-  aria-label="Menu principal"
->
+<aside id="sidebar" class="flex h-screen w-full flex-col bg-[#004b46] text-white transition-all duration-300 md:fixed md:inset-y-0 md:w-72 overflow-hidden" aria-label="Menu principal">
 
   <!-- TOPO FIXO: Logotipo e Botão de Recolher -->
   <div class="flex items-center justify-between border-b border-emerald-900/35 px-6 py-6 shrink-0">
     <a href="{% url 'usuarios:home' %}" class="sidebar-label block">
-      <img
-        src="{% static 'usuarios/images/flexxHub.png' %}"
-        alt="Grupo Flexível"
-        class="h-auto w-full max-w-[185px] object-contain"
-      >
+      <img src="{% static 'usuarios/images/flexxHub.png' %}" alt="Grupo Flexível" class="h-auto w-full max-w-[185px] object-contain">
     </a>
 
-    <button
-      id="sidebar-toggle"
-      type="button"
-      class="rounded-lg p-2 text-emerald-50 transition hover:bg-white/15 hover:text-white"
-      aria-label="Recolher menu"
-      title="Recolher menu"
-      aria-expanded="true"
-    >
-      <svg
-        class="h-5 w-5"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        aria-hidden="true"
-      >
+    <button id="sidebar-toggle" type="button" class="rounded-lg p-2 text-emerald-50 transition hover:bg-white/15 hover:text-white" aria-label="Recolher menu" title="Recolher menu" aria-expanded="true">
+      <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
         <path d="m11 17-5-5 5-5"/>
         <path d="m18 17-5-5 5-5"/>
       </svg>
     </button>
   </div>
 
-  <!-- CENTRO COM SCROLL CUSTOMIZADO (Sem fundo branco) -->
+  <!-- CENTRO COM SCROLL CUSTOMIZADO -->
   <nav class="flex-1 space-y-2 px-4 py-4 overflow-y-auto overflow-x-hidden [scrollbar-width:thin] [scrollbar-color:rgba(255,255,255,0.2)_transparent] [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-white/20 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-white/40">
 
     <!-- INÍCIO -->
-    <a
-      href="{% url 'usuarios:home' %}"
-      class="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-emerald-50 transition hover:bg-white/15 hover:text-white"
-      title="Início"
-    >
-      <svg
-        class="h-5 w-5 shrink-0"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2"
-        aria-hidden="true"
-      >
+    <a href="{% url 'usuarios:home' %}" class="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-emerald-50 transition hover:bg-white/15 hover:text-white" title="Início">
+      <svg class="h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
         <path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/>
         <path d="M9 21v-6h6v6"/>
       </svg>
@@ -62,21 +29,10 @@
       <span class="sidebar-label">Início</span>
     </a>
 
-    <!-- CADASTRAR COLABORADOR - SOMENTE SUPERUSER -->
+    <!-- CADASTRAR COLABORADOR - STAFF OU SUPERUSER -->
     {% if user.is_staff or user.is_superuser %}
-      <a
-        href="{% url 'usuarios:cadastro_usuario' %}"
-        class="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-emerald-50 transition hover:bg-white/15 hover:text-white"
-        title="Cadastrar colaborador"
-      >
-        <svg
-          class="h-5 w-5 shrink-0"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          aria-hidden="true"
-        >
+      <a href="{% url 'usuarios:cadastro_usuario' %}" class="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-emerald-50 transition hover:bg-white/15 hover:text-white" title="Cadastrar colaborador">
+        <svg class="h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
           <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
           <circle cx="9" cy="7" r="4"/>
           <path d="M19 8v6M22 11h-6"/>
@@ -86,21 +42,10 @@
       </a>
     {% endif %}
 
-    <!-- GERENCIAR COLABORADORES - SOMENTE SUPERUSER -->
+    <!-- GERENCIAR COLABORADORES - STAFF OU SUPERUSER -->
     {% if user.is_staff or user.is_superuser %}
-      <a
-        href="{% url 'usuarios:listar_usuarios' %}"
-        class="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-emerald-50 transition hover:bg-white/15 hover:text-white"
-        title="Gerenciar colaboradores"
-      >
-        <svg
-          class="h-5 w-5 shrink-0"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          aria-hidden="true"
-        >
+      <a href="{% url 'usuarios:listar_usuarios' %}" class="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-emerald-50 transition hover:bg-white/15 hover:text-white" title="Gerenciar colaboradores">
+        <svg class="h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
           <path d="M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"/>
           <circle cx="10" cy="7" r="4"/>
           <path d="M21 11h-6"/>
@@ -113,19 +58,8 @@
 
     <!-- CADASTRAR RECURSO - STAFF OU SUPERUSER -->
     {% if user.is_staff or user.is_superuser %}
-      <a
-        href="{% url 'usuarios:cadastrar_recurso' %}"
-        class="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-emerald-50 transition hover:bg-white/15 hover:text-white"
-        title="Cadastrar Links/Arquivos"
-      >
-        <svg
-          class="h-5 w-5 shrink-0"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          aria-hidden="true"
-        >
+      <a href="{% url 'usuarios:cadastrar_recurso' %}" class="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-emerald-50 transition hover:bg-white/15 hover:text-white" title="Cadastrar Links/Arquivos">
+        <svg class="h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
           <path d="M12 4v16m8-8H4"/>
         </svg>
 
@@ -135,19 +69,8 @@
 
     <!-- GERENCIAR RECURSOS - STAFF OU SUPERUSER -->
     {% if user.is_staff or user.is_superuser %}
-      <a
-        href="{% url 'usuarios:gerenciar_recursos' %}"
-        class="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-emerald-50 transition hover:bg-white/15 hover:text-white"
-        title="Gerenciar Links e Arquivos"
-      >
-        <svg
-          class="h-5 w-5 shrink-0"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          aria-hidden="true"
-        >
+      <a href="{% url 'usuarios:gerenciar_recursos' %}" class="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-emerald-50 transition hover:bg-white/15 hover:text-white" title="Gerenciar Links e Arquivos">
+        <svg class="h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
           <path d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
         </svg>
 
@@ -155,19 +78,35 @@
       </a>
     {% endif %}
 
+    <!-- GRUPOS / ESPAÇOS - SOMENTE SUPERUSER -->
+    {% if user.is_superuser %}
+      <!-- CADASTRAR GRUPO / ESPAÇO -->
+      <a href="{% url 'usuarios:cadastrar_grupo' %}" class="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-emerald-50 transition hover:bg-white/15 hover:text-white" title="Cadastrar Grupo/Espaço">
+        <svg class="h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <circle cx="8" cy="8" r="3"/>
+          <path d="M2 21v-2a6 6 0 0 1 12 0v2"/>
+          <path d="M19 8v6"/>
+          <path d="M22 11h-6"/>
+        </svg>
+        <span class="sidebar-label">Cadastrar Grupo/Espaço</span>
+      </a>
+
+      <!-- GERENCIAR GRUPOS / ESPAÇOS -->
+      <a href="{% url 'usuarios:gerenciar_grupos' %}" class="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-emerald-50 transition hover:bg-white/15 hover:text-white" title="Gerenciar Grupos/Espaços">
+        <svg class="h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <circle cx="8" cy="8" r="3"/>
+          <path d="M2 21v-2a6 6 0 0 1 12 0v2"/>
+          <circle cx="18" cy="10" r="2"/>
+          <path d="M15 21v-1a4 4 0 0 1 6-3.46"/>
+        </svg>
+        <span class="sidebar-label">Gerenciar Grupos/Espaços</span>
+      </a>
+    {% endif %}
+
     <!-- ACESSOS -->
     <details class="group">
-      <summary
-        class="flex cursor-pointer list-none items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold text-emerald-50 transition hover:bg-white/15 hover:text-white"
-      >
-        <svg
-          class="h-4 w-4 shrink-0 transition group-open:rotate-90"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          aria-hidden="true"
-        >
+      <summary class="flex cursor-pointer list-none items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold text-emerald-50 transition hover:bg-white/15 hover:text-white">
+        <svg class="h-4 w-4 shrink-0 transition group-open:rotate-90" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
           <path d="m9 18 6-6-6-6"/>
         </svg>
 
@@ -175,115 +114,47 @@
       </summary>
 
       <div class="sidebar-label ml-3 mt-1 space-y-1 border-l border-emerald-200/25 pl-3">
-
-        <!-- ESPAÇO COLABORADORES -->
-        <details class="group">
-          <summary
-            class="flex cursor-pointer list-none items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-emerald-50 transition hover:bg-white/15 hover:text-white"
-          >
-            <svg
-              class="h-4 w-4 shrink-0 transition group-open:rotate-90"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              aria-hidden="true"
-            >
-              <path d="m9 18 6-6-6-6"/>
-            </svg>
-
-            <span class="sidebar-label">Espaço Colaboradores</span>
-          </summary>
-
-          <div class="sidebar-label ml-7 mt-1 space-y-1 border-l border-emerald-200/25 pl-3">
-
-            {% for link in links_uteis %}
-              <a
-                href="{% if link.arquivo %}{{ link.arquivo.url }}{% else %}{{ link.url }}{% endif %}"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="block truncate rounded-lg px-3 py-2 text-xs text-emerald-100/85 transition hover:bg-white/15 hover:text-white"
-              >
-                {{ link.nome }}
-              </a>
-            {% empty %}
-              <span class="block px-3 py-2 text-xs text-emerald-100/60">
-                Nenhum link cadastrado
-              </span>
-            {% endfor %}
-
-          </div>
-        </details>
-
-        <!-- CENTROS DE CUSTO -->
+        <!-- GRUPOS / ESPAÇOS DISPONÍVEIS PARA O USUÁRIO -->
         {% for grupo in ferramentas %}
 
           <details class="group">
-
-            <summary
-              class="flex cursor-pointer list-none items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-emerald-50 transition hover:bg-white/15 hover:text-white"
-            >
-              <svg
-                class="h-4 w-4 shrink-0 transition group-open:rotate-90"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                aria-hidden="true"
-              >
+            <summary class="flex cursor-pointer list-none items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-emerald-50 transition hover:bg-white/15 hover:text-white">
+              <svg class="h-4 w-4 shrink-0 transition group-open:rotate-90" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                 <path d="m9 18 6-6-6-6"/>
               </svg>
-
-              <span
-                class="sidebar-label min-w-0 truncate"
-                title="{{ grupo.centro_custo_codigo }} - {{ grupo.centro_custo_descricao }}"
-              >
-                {{ grupo.centro_custo_descricao }}
+              <span class="sidebar-label min-w-0 truncate" title="{{ grupo.nome }}">
+                {{ grupo.nome }}
               </span>
             </summary>
 
+            <!-- RECURSOS DO GRUPO -->
             <div class="sidebar-label ml-7 mt-1 space-y-1 border-l border-emerald-200/25 pl-3">
 
               {% for ferramenta in grupo.itens %}
-                <a
-                  href="{% if ferramenta.arquivo %}{{ ferramenta.arquivo.url }}{% else %}{{ ferramenta.url }}{% endif %}"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="block truncate rounded-lg px-3 py-2 text-xs text-emerald-100/85 transition hover:bg-white/15 hover:text-white"
-                >
+                <a href="{% if ferramenta.arquivo %}{{ ferramenta.arquivo.url }}{% else %}{{ ferramenta.url }}{% endif %}" target="_blank" rel="noopener noreferrer" class="block truncate rounded-lg px-3 py-2 text-xs text-emerald-100/85 transition hover:bg-white/15 hover:text-white" title="{{ ferramenta.nome }}">
                   {{ ferramenta.nome }}
                 </a>
+              {% empty %}
+                <span class="block px-3 py-2 text-xs text-emerald-100/60">
+                  Nenhum recurso disponível
+                </span>
               {% endfor %}
-
-          </div>
-
+            </div>
           </details>
-
+        {% empty %}
+          <span class="block px-4 py-3 text-xs text-emerald-100/60">
+            Nenhum Grupo/Espaço disponível
+          </span>
         {% endfor %}
 
       </div>
     </details>
 
-    <!-- ALTERAR SENHA (APARECE APENAS PARA QUEM TEM SENHA LOCAL, EXCLUINDO USUÁRIOS DO AD) -->
+    <!-- ALTERAR SENHA -->
     {% if user.has_usable_password %}
-      <a
-        href="{% url 'usuarios:mudar_senha' %}"
-        class="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-emerald-50 transition hover:bg-white/15 hover:text-white"
-        title="Alterar senha"
-      >
-        <svg
-          class="h-5 w-5 shrink-0"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          aria-hidden="true"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"
-          />
+      <a href="{% url 'usuarios:mudar_senha' %}" class="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-emerald-50 transition hover:bg-white/15 hover:text-white" title="Alterar senha">
+        <svg class="h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
         </svg>
 
         <span class="sidebar-label">Alterar senha</span>
@@ -292,19 +163,8 @@
 
     <!-- ADMIN -->
     {% if user.is_staff %}
-      <a
-        href="{% url 'admin:index' %}"
-        class="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-emerald-50 transition hover:bg-white/15 hover:text-white"
-        title="Administração"
-      >
-        <svg
-          class="h-5 w-5 shrink-0"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          aria-hidden="true"
-        >
+      <a href="{% url 'admin:index' %}" class="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-emerald-50 transition hover:bg-white/15 hover:text-white" title="Administração">
+        <svg class="h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
           <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 1 0-2 3.46l.15.08a2 2 0 0 1 1 1.73v.5a2 2 0 0 1-1 1.74l-.15.09a2 2 0 1 0 2 3.46l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 1 0 2-3.46l-.15-.08a2 2 0 0 1-1-1.73v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 1 0-2-3.46l-.15-.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2Z"/>
           <circle cx="12" cy="12" r="3"/>
         </svg>
@@ -315,7 +175,7 @@
 
   </nav>
 
-  <!-- RODAPÉ FIXO: Perfil, Botão Sair e Copyright -->
+  <!-- RODAPÉ FIXO -->
   <div class="border-t border-emerald-900/35 px-6 py-5 text-sm shrink-0 bg-[#004b46]">
 
     <div class="sidebar-label">
@@ -328,26 +188,11 @@
       </p>
     </div>
 
-    <!-- Botão Sair -->
-    <form
-      method="post"
-      action="{% url 'usuarios:logout' %}"
-      class="mt-3"
-    >
+    <!-- BOTÃO SAIR -->
+    <form method="post" action="{% url 'usuarios:logout' %}" class="mt-3">
       {% csrf_token %}
-
-      <button
-        class="flex items-center gap-2 font-medium text-emerald-50 underline decoration-emerald-200/50 underline-offset-4 transition hover:text-white text-xs"
-        title="Sair"
-      >
-        <svg
-          class="h-4 w-4 shrink-0"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          aria-hidden="true"
-        >
+      <button class="flex items-center gap-2 font-medium text-emerald-50 underline decoration-emerald-200/50 underline-offset-4 transition hover:text-white text-xs" title="Sair">
+        <svg class="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
           <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
           <path d="m16 17 5-5-5-5M21 12H9"/>
         </svg>
@@ -356,7 +201,7 @@
       </button>
     </form>
 
-    <!-- Copyright Institucional Fixo -->
+    <!-- COPYRIGHT -->
     <div class="sidebar-label mt-3 pt-3 border-t border-emerald-900/25 text-[11px] text-emerald-100/60 font-medium tracking-wide flex items-center justify-between">
       <span>&copy; {% now "Y" %} Grupo Flexível</span>
       <span class="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400/60" title="Sistema Online"></span>

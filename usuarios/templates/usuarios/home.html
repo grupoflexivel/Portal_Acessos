@@ -8,24 +8,36 @@
   <link rel="icon" type="image/png" href="{% static 'usuarios/images/Grupo Flexível_icon_color_X.png' %}">
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
+
 <body class="min-h-screen bg-slate-100 text-slate-900">
   <div class="min-h-screen md:flex">
+
     {% include "usuarios/includes/sidebar.html" %}
 
     <main id="page-content" class="flex-1 p-6 transition-all duration-300 md:ml-72 md:p-10">
       <div class="mx-auto max-w-6xl">
+
+        <!-- CABEÇALHO -->
         <header class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p class="text-sm font-medium text-[#00776d]">Área do colaborador | flexxHub</p>
-            <h1 class="mt-1 text-3xl font-bold tracking-tight">Olá, {{ user.nome|default:user.username }}</h1>
-            <p class="mt-2 text-slate-600">Acesse os sistemas disponíveis para o seu perfil.</p>
+            <p class="text-sm font-medium text-[#00776d]">
+              Área do colaborador | flexxHub
+            </p>
+            <h1 class="mt-1 text-3xl font-bold tracking-tight">
+              Olá, {{ user.nome|default:user.username }}
+            </h1>
+            <p class="mt-2 text-slate-600">
+              Acesse os sistemas disponíveis para o seu perfil.
+            </p>
           </div>
-          
+
           <!-- CAMPO DE BUSCA -->
           <div class="w-full sm:w-[480px]">
             <div class="relative">
-              <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
-                <svg class="w-4 h-4" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+              <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
+                <svg class="h-4 w-4" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
               </span>
               <input type="text" id="searchInput" placeholder="Buscar links ou documentos..." class="w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-10 pr-4 text-sm text-slate-900 shadow-sm placeholder-slate-400 focus:border-[#00776d] focus:outline-none focus:ring-1 focus:ring-[#00776d]">
             </div>
@@ -33,211 +45,226 @@
         </header>
 
         <!-- MENSAGEM QUANDO NENHUM RESULTADO FOR ENCONTRADO -->
-        <div id="noResults" class="hidden rounded-xl border border-dashed border-slate-300 bg-white p-8 text-center mb-8">
-          <h2 class="font-semibold text-slate-800">Nenhum resultado encontrado</h2>
-          <p class="mt-2 text-sm text-slate-500">Tente buscar por outro termo.</p>
+        <div id="noResults" class="mb-8 hidden rounded-xl border border-dashed border-slate-300 bg-white p-8 text-center">
+          <h2 class="font-semibold text-slate-800">
+            Nenhum resultado encontrado
+          </h2>
+          <p class="mt-2 text-sm text-slate-500">
+            Tente buscar por outro termo.
+          </p>
         </div>
 
-        {% if links_uteis %}
-          <section class="mb-8 search-section">
-            <h2 class="mb-4 text-xl font-semibold">Links/Arquivos Colaboradores</h2>
-            <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-              {% for link in links_uteis %}
-                <a href="{% if link.arquivo %}{{ link.arquivo.url }}{% else %}{{ link.url }}{% endif %}" target="_blank" rel="noopener noreferrer" class="search-item rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-md flex items-start gap-4" data-name="{{ link.nome|lower }}">
-                  <!-- BLOCO DE LOGO OU ÍCONE -->
-                  <div class="flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-xl bg-slate-50 border border-slate-100 overflow-hidden text-[#00776d]">
-                    {% if link.logo %}
-                      <img src="{{ link.logo.url }}" alt="{{ link.nome }}" class="w-full h-full object-contain p-1">
-                    {% elif link.icone == 'globe' %}
-                      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    {% elif link.icone == 'document' %}
-                      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                    {% elif link.icone == 'folder' %}
-                      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path></svg>
-                    {% elif link.icone == 'dashboard' or link.icone == 'chart' %}
-                      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
-                    {% elif link.icone == 'computer' %}
-                      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
-                    {% elif link.icone == 'database' %}
-                      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"></path></svg>
-                    {% elif link.icone == 'email' %}
-                      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
-                    {% elif link.icone == 'users' %}
-                      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
-                    {% elif link.icone == 'support' %}
-                      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
-                    {% elif link.icone == 'shield' %}
-                      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
-                    {% elif link.icone == 'settings' %}
-                      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                    {% else %}
-                      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
-                    {% endif %}
-                  </div>
-                  <div>
-                    <p class="font-semibold text-slate-800">{{ link.nome }}</p>
-                    <p class="mt-1 text-sm text-slate-500">{% if link.arquivo %}Baixar arquivo{% else %}Abrir link{% endif %}</p>
-                  </div>
-                </a>
-              {% endfor %}
-            </div>
-          </section>
-        {% endif %}
-
-        {% if administrador and ferramentas %}
-          <section class="space-y-8 search-section">
+        <!-- RECURSOS DISPONÍVEIS -->
+        {% if ferramentas %}
+          <section class="space-y-8">
             <div>
-              <h2 class="text-xl font-semibold">Ferramentas administrativas</h2>
-              <p class="mt-1 text-sm text-slate-600">Como administrador, você visualiza os acessos de todos os centros de custo.</p>
+              <h2 class="text-xl font-semibold">
+                Recursos disponíveis
+              </h2>
+              <p class="mt-1 text-sm text-slate-600">
+                {% if administrador %}
+                  Como administrador, você visualiza os recursos disponíveis nos Grupos/Espaços permitidos.
+                {% else %}
+                  Os recursos abaixo estão organizados de acordo com os seus Grupos/Espaços.
+                {% endif %}
+              </p>
             </div>
+
+            <!-- GRUPOS / ESPAÇOS -->
             {% for grupo in ferramentas %}
-              <section class="search-grupo">
-                <h3 class="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">Centro de custo {{ grupo.centro_custo_codigo }} - {{ grupo.centro_custo_descricao }}</h3>
-                <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+              <section class="search-grupo {% if grupo.nome|lower == 'todos' %}mb-10{% endif %}" data-group="{{ grupo.nome|lower }}">
+                <!-- CABEÇALHO DO GRUPO -->
+                <div class="mb-3">
+                  <h3 class="text-sm font-semibold uppercase tracking-wide text-slate-500">
+                    {{ grupo.nome }}
+                  </h3>
+                  {% if grupo.descricao %}
+                    <p class="mt-1 text-xs text-slate-400">
+                      {{ grupo.descricao }}
+                    </p>
+                  {% endif %}
+                </div>
+
+                <!-- RECURSOS DO GRUPO -->
+                <div class="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4">
                   {% for ferramenta in grupo.itens %}
-                    <a href="{% if ferramenta.arquivo %}{{ ferramenta.arquivo.url }}{% else %}{{ ferramenta.url }}{% endif %}" target="_blank" rel="noopener noreferrer" class="search-item rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-md flex items-start gap-4" data-name="{{ ferramenta.nome|lower }}">
-                      <div class="flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-xl bg-slate-50 border border-slate-100 overflow-hidden text-[#00776d]">
+                    <a href="{% if ferramenta.arquivo %}{{ ferramenta.arquivo.url }}{% else %}{{ ferramenta.url }}{% endif %}" target="_blank" rel="noopener noreferrer" class="search-item flex items-start gap-4 rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-md" data-name="{{ ferramenta.nome|lower }}" data-group="{{ grupo.nome|lower }}">
+                      
+                      <!-- LOGO / ÍCONE -->
+                      <div class="flex h-12 w-12 flex-shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-100 bg-slate-50 text-[#00776d]">
                         {% if ferramenta.logo %}
-                          <img src="{{ ferramenta.logo.url }}" alt="{{ ferramenta.nome }}" class="w-full h-full object-contain p-1">
+                          <img src="{{ ferramenta.logo.url }}" alt="{{ ferramenta.nome }}" class="h-full w-full object-contain p-1">
                         {% elif ferramenta.icone == 'globe' %}
-                          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                          <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                          </svg>
                         {% elif ferramenta.icone == 'document' %}
-                          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                          <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                          </svg>
                         {% elif ferramenta.icone == 'folder' %}
-                          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path></svg>
+                          <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
+                          </svg>
                         {% elif ferramenta.icone == 'dashboard' or ferramenta.icone == 'chart' %}
-                          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                          <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                          </svg>
                         {% elif ferramenta.icone == 'computer' %}
-                          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                          <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                          </svg>
                         {% elif ferramenta.icone == 'database' %}
-                          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"></path></svg>
+                          <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"/>
+                          </svg>
                         {% elif ferramenta.icone == 'email' %}
-                          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                          <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                          </svg>
                         {% elif ferramenta.icone == 'users' %}
-                          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                          <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+                          </svg>
                         {% elif ferramenta.icone == 'support' %}
-                          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                          <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"/>
+                          </svg>
                         {% elif ferramenta.icone == 'shield' %}
-                          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                          <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                          </svg>
                         {% elif ferramenta.icone == 'settings' %}
-                          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                          <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                          </svg>
                         {% else %}
-                          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
+                          <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+                          </svg>
                         {% endif %}
                       </div>
-                      <div>
-                        <p class="font-semibold text-slate-800">{{ ferramenta.nome }}</p>
-                        <p class="mt-1 text-sm text-slate-500">{% if ferramenta.arquivo %}Baixar arquivo{% else %}Abrir link{% endif %}</p>
+
+                      <!-- INFORMAÇÕES -->
+                      <div class="min-w-0">
+                        <p class="truncate font-semibold text-slate-800">
+                          {{ ferramenta.nome }}
+                        </p>
+                        <p class="mt-1 text-sm text-slate-500">
+                          {% if ferramenta.arquivo %}
+                            Baixar arquivo
+                          {% else %}
+                            Abrir link
+                          {% endif %}
+                        </p>
                       </div>
                     </a>
+                  {% empty %}
+                    <div class="col-span-full rounded-xl border border-dashed border-slate-300 bg-white p-5 text-center text-sm text-slate-500">
+                      Nenhum recurso disponível neste Grupo/Espaço.
+                    </div>
                   {% endfor %}
                 </div>
               </section>
             {% endfor %}
           </section>
-        {% elif ferramentas %}
-          <section class="search-section">
-            <h2 class="mb-4 text-xl font-semibold">Suas ferramentas</h2>
-            {% for grupo in ferramentas %}
-              <div class="search-grupo mb-6">
-                <h3 class="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">{{ grupo.centro_custo_descricao }}</h3>
-                <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                  {% for ferramenta in grupo.itens %}
-                    <a href="{% if ferramenta.arquivo %}{{ ferramenta.arquivo.url }}{% else %}{{ ferramenta.url }}{% endif %}" target="_blank" rel="noopener noreferrer" class="search-item rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-300 hover:shadow-md flex items-start gap-4" data-name="{{ ferramenta.nome|lower }}">
-                      <div class="flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-xl bg-slate-50 border border-slate-100 overflow-hidden text-[#00776d]">
-                        {% if ferramenta.logo %}
-                          <img src="{{ ferramenta.logo.url }}" alt="{{ ferramenta.nome }}" class="w-full h-full object-contain p-1">
-                        {% elif ferramenta.icone == 'globe' %}
-                          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                        {% elif ferramenta.icone == 'document' %}
-                          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                        {% elif ferramenta.icone == 'folder' %}
-                          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path></svg>
-                        {% elif ferramenta.icone == 'dashboard' or ferramenta.icone == 'chart' %}
-                          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
-                        {% elif ferramenta.icone == 'computer' %}
-                          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
-                        {% elif ferramenta.icone == 'database' %}
-                          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"></path></svg>
-                        {% elif ferramenta.icone == 'email' %}
-                          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
-                        {% elif ferramenta.icone == 'users' %}
-                          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
-                        {% elif ferramenta.icone == 'support' %}
-                          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
-                        {% elif ferramenta.icone == 'shield' %}
-                          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
-                        {% elif ferramenta.icone == 'settings' %}
-                          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                        {% else %}
-                          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
-                        {% endif %}
-                      </div>
-                      <div>
-                        <p class="font-semibold text-slate-800">{{ ferramenta.nome }}</p>
-                        <p class="mt-1 text-sm text-slate-500">{% if ferramenta.arquivo %}Baixar arquivo{% else %}Abrir link{% endif %}</p>
-                      </div>
-                    </a>
-                  {% endfor %}
-                </div>
-              </div>
-            {% endfor %}
-          </section>
         {% else %}
+          <!-- SEM RECURSOS -->
           <section class="rounded-xl border border-dashed border-slate-300 bg-white p-8 text-center">
-            <h2 class="font-semibold text-slate-800">Nenhuma ferramenta disponível</h2>
-            <p class="mt-2 text-sm text-slate-500">Não há ferramentas configuradas para o seu centro de custo.</p>
+            <h2 class="font-semibold text-slate-800">
+              Nenhum recurso disponível
+            </h2>
+            <p class="mt-2 text-sm text-slate-500">
+              Não existem recursos disponíveis para os seus Grupos/Espaços.
+            </p>
           </section>
         {% endif %}
+
       </div>
     </main>
   </div>
 
   <script>
-    // Script da Sidebar
+
+    // SIDEBAR
+   
     const sidebar = document.getElementById('sidebar');
     const pageContent = document.getElementById('page-content');
     const toggle = document.getElementById('sidebar-toggle');
     const labels = document.querySelectorAll('.sidebar-label');
 
-    toggle.addEventListener('click', () => {
-      const collapsed = toggle.getAttribute('aria-expanded') === 'true';
-      toggle.setAttribute('aria-expanded', String(!collapsed));
-      toggle.setAttribute('aria-label', collapsed ? 'Expandir menu' : 'Recolher menu');
-      toggle.setAttribute('title', collapsed ? 'Expandir menu' : 'Recolher menu');
-      sidebar.classList.toggle('md:w-72', !collapsed);
-      sidebar.classList.toggle('md:w-20', collapsed);
-      pageContent.classList.toggle('md:ml-72', !collapsed);
-      pageContent.classList.toggle('md:ml-20', collapsed);
-      labels.forEach((label) => label.classList.toggle('hidden', collapsed));
-    });
+    if (toggle && sidebar && pageContent) {
+      toggle.addEventListener('click', () => {
+        const collapsed = toggle.getAttribute('aria-expanded') === 'true';
 
-    // Script de Busca Instantânea
+        toggle.setAttribute('aria-expanded', String(!collapsed));
+        toggle.setAttribute('aria-label', collapsed ? 'Expandir menu' : 'Recolher menu');
+        toggle.setAttribute('title', collapsed ? 'Expandir menu' : 'Recolher menu');
+
+        sidebar.classList.toggle('md:w-72', !collapsed);
+        sidebar.classList.toggle('md:w-20', collapsed);
+        pageContent.classList.toggle('md:ml-72', !collapsed);
+        pageContent.classList.toggle('md:ml-20', collapsed);
+
+        labels.forEach(label => {
+          label.classList.toggle('hidden', collapsed);
+        });
+      });
+    }
+
+  
+    //BUSCA INSTANTÂNEA
+    
     const searchInput = document.getElementById('searchInput');
     const searchItems = document.querySelectorAll('.search-item');
+    const searchGroups = document.querySelectorAll('.search-grupo');
     const noResults = document.getElementById('noResults');
 
-    searchInput.addEventListener('input', (e) => {
-      const term = e.target.value.toLowerCase().trim();
-      let visibleCount = 0;
+    if (searchInput) {
+      searchInput.addEventListener('input', event => {
+        const term = event.target.value.toLowerCase().trim();
+        let visibleCount = 0;
 
-      searchItems.forEach(item => {
-        const name = item.getAttribute('data-name');
-        if (name.includes(term)) {
-          item.classList.remove('hidden');
-          visibleCount++;
+        
+        //FILTRA OS RECURSOS
+        searchItems.forEach(item => {
+          const name = item.getAttribute('data-name') || '';
+          const group = item.getAttribute('data-group') || '';
+          const visible = name.includes(term) || group.includes(term);
+
+          if (visible) {
+            item.classList.remove('hidden');
+            visibleCount++;
+          } else {
+            item.classList.add('hidden');
+          }
+        });
+
+        
+        //ESCONDE GRUPOS SEM RESULTADOS
+        
+        searchGroups.forEach(group => {
+          const visibleItems = group.querySelectorAll('.search-item:not(.hidden)');
+
+          if (term !== '' && visibleItems.length === 0) {
+            group.classList.add('hidden');
+          } else {
+            group.classList.remove('hidden');
+          }
+        });
+
+        
+        //MENSAGEM DE NENHUM RESULTADO
+        
+        if (term !== '' && visibleCount === 0 && searchItems.length > 0) {
+          noResults.classList.remove('hidden');
         } else {
-          item.classList.add('hidden');
+          noResults.classList.add('hidden');
         }
       });
-
-      // Controla a exibição da mensagem de "Nenhum resultado"
-      if (visibleCount === 0 && searchItems.length > 0) {
-        noResults.classList.remove('hidden');
-      } else {
-        noResults.classList.add('hidden');
-      }
-    });
+    }
   </script>
+
 </body>
 </html>

@@ -1,0 +1,101 @@
+{% load static %}
+<!doctype html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>flexxHub | Gerenciar Grupo/Espaço</title>
+    <link rel="icon" type="image/png" href="{% static 'usuarios/images/Grupo Flexível_icon_color_X.png' %}">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 text-slate-900">
+
+  {% include "usuarios/includes/sidebar.html" %}
+
+  <div id="page-content" class="min-h-screen transition-all duration-300 md:ml-72">
+    <main class="p-6 lg:p-10">
+      <div class="mx-auto max-w-6xl">
+        
+        <div class="mb-6 flex items-end justify-between">
+          <div>
+            <h1 class="text-2xl font-bold">Gerenciar Grupos/Espaços</h1>
+            <p class="mt-1 text-sm text-slate-600">O grupo Todos é protegido e funciona como acesso global.</p>
+          </div>
+          <a href="{% url 'usuarios:cadastrar_grupo' %}" class="rounded-xl bg-[#00776d] px-4 py-2.5 text-sm font-semibold text-white">Novo Grupo/Espaço</a>
+        </div>
+
+        {% if messages %}
+          {% for message in messages %}
+            <div class="mb-4 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm">{{ message }}</div>
+          {% endfor %}
+        {% endif %}
+
+        <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <table class="min-w-full divide-y divide-slate-200">
+            <thead class="bg-slate-50">
+              <tr>
+                <th class="px-5 py-3 text-left text-xs font-semibold uppercase text-slate-500">Grupo/Espaço</th>
+                <th class="px-5 py-3 text-left text-xs font-semibold uppercase text-slate-500">Usuários</th>
+                <th class="px-5 py-3 text-left text-xs font-semibold uppercase text-slate-500">Recursos</th>
+                <th class="px-5 py-3 text-left text-xs font-semibold uppercase text-slate-500">Status</th>
+                <th class="px-5 py-3 text-right text-xs font-semibold uppercase text-slate-500">Ações</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              {% for grupo in grupos %}
+                <tr>
+                  <td class="px-5 py-4">
+                    <p class="font-semibold">{{ grupo.nome }}</p>
+                    <p class="text-xs text-slate-500">{{ grupo.descricao|default:'Sem descrição' }}</p>
+                  </td>
+                  <td class="px-5 py-4 text-sm">{{ grupo.total_usuarios }}</td>
+                  <td class="px-5 py-4 text-sm">{{ grupo.total_recursos }}</td>
+                  <td class="px-5 py-4">
+                    <span class="rounded-full px-2.5 py-1 text-xs font-medium {% if grupo.ativo %}bg-emerald-50 text-emerald-700{% else %}bg-slate-100 text-slate-600{% endif %}">
+                      {% if grupo.ativo %}Ativo{% else %}Inativo{% endif %}
+                    </span>
+                  </td>
+                  <td class="px-5 py-4 text-right">
+                    <a href="{% url 'usuarios:editar_grupo' grupo.id %}" class="text-sm font-semibold text-[#00776d] hover:underline">Editar</a>
+                    {% if not grupo.grupo_sistema and not grupo.eh_todos %}
+                      <form method="post" action="{% url 'usuarios:excluir_grupo' grupo.id %}" class="ml-3 inline" onsubmit="return confirm('Excluir este Grupo/Espaço?');">
+                        {% csrf_token %}
+                        <button class="text-sm font-semibold text-red-600 hover:underline">Excluir</button>
+                      </form>
+                    {% endif %}
+                  </td>
+                </tr>
+              {% empty %}
+                <tr>
+                  <td colspan="5" class="px-5 py-10 text-center text-sm text-slate-500">Nenhum grupo cadastrado.</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const sidebar = document.getElementById('sidebar');
+    const pageContent = document.getElementById('page-content');
+    const toggle = document.getElementById('sidebar-toggle');
+    const labels = document.querySelectorAll('.sidebar-label');
+
+    if (toggle) {
+      toggle.addEventListener('click', () => {
+        const e = toggle.getAttribute('aria-expanded') === 'true';
+        toggle.setAttribute('aria-expanded', String(!e));
+        sidebar.classList.toggle('md:w-72', !e);
+        sidebar.classList.toggle('md:w-20', e);
+        pageContent.classList.toggle('md:ml-72', !e);
+        pageContent.classList.toggle('md:ml-20', e);
+        labels.forEach(l => l.classList.toggle('hidden', e));
+      });
+    }
+  </script>
+
+</body>
+</html>

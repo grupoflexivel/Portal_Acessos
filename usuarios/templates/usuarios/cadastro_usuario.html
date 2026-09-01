@@ -8,26 +8,30 @@
   <link rel="icon" type="image/png" href="{% static 'usuarios/images/Grupo Flexível_icon_color_X.png' %}">
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
+
 <body class="min-h-screen bg-slate-100 text-slate-900">
   <div class="min-h-screen md:flex">
+
     {% include "usuarios/includes/sidebar.html" %}
 
     <main id="page-content" class="flex-1 p-6 transition-all duration-300 md:ml-72 md:p-10">
       <div class="mx-auto max-w-3xl">
-        
         <div class="mb-7 flex items-center justify-between gap-4">
           <div>
             <p class="text-sm font-semibold text-[#00776d]">Administração</p>
             <h1 class="mt-1 text-3xl font-bold tracking-tight">Cadastrar colaborador</h1>
             <p class="mt-2 text-slate-600">Crie uma nova conta para acesso ao portal.</p>
           </div>
-          <a href="{% url 'usuarios:listar_usuarios' %}" class="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-[#00776d] hover:text-[#00776d]">Voltar</a>
+
+          <a href="{% url 'usuarios:listar_usuarios' %}" class="rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:border-[#00776d] hover:text-[#00776d]">
+            Voltar
+          </a>
         </div>
-        
+
         <section class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200 sm:p-8">
           <form method="post" class="space-y-5">
             {% csrf_token %}
-            
+
             {% if form.non_field_errors %}
               <div class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
                 {{ form.non_field_errors }}
@@ -38,40 +42,87 @@
               <div>
                 {% if field.name == 'ativo' or field.name == 'vinculado_ad' %}
                   <label class="flex cursor-pointer items-center gap-3 rounded-xl border border-slate-200 p-4 text-sm font-medium text-slate-700">
-                    {{ field }} <span>{{ field.label }}</span>
+                    {{ field }}
+                    <span>{{ field.label }}</span>
                   </label>
-                
+
+                {% elif field.name == 'grupos' %}
+                  <label class="mb-2 block text-sm font-semibold text-slate-700">
+                    {{ field.label }}
+                  </label>
+                  <div class="relative" id="grupos-dropdown">
+                    <button type="button" id="grupos-toggle" aria-expanded="false" class="flex w-full items-center justify-between gap-3 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-left text-sm text-slate-700 transition hover:border-slate-400 focus:border-[#00776d] focus:outline-none focus:ring-2 focus:ring-[#00776d]/20">
+                      <span id="grupos-label" class="min-w-0 flex-1 truncate">
+                        Selecione os grupos
+                      </span>
+                      <svg id="grupos-arrow" class="h-4 w-4 shrink-0 text-slate-500 transition-transform duration-200" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+                      </svg>
+                    </button>
+
+                    <div id="grupos-menu" class="absolute left-0 right-0 z-50 mt-2 hidden max-h-64 overflow-y-auto rounded-xl border border-slate-200 bg-white py-1 shadow-xl">
+                      {% for grupo in field.field.queryset %}
+                        <label class="flex cursor-pointer items-center gap-3 px-4 py-2.5 transition hover:bg-slate-50">
+                          <input type="checkbox" name="grupos" value="{{ grupo.pk }}" data-nome="{{ grupo.nome }}" class="grupo-checkbox h-4 w-4 rounded border-slate-300 text-[#00776d] focus:ring-[#00776d]" {% if grupo.pk|stringformat:"s" in field.value %}checked{% endif %}>
+                          <span class="flex-1 text-sm font-medium text-slate-700">
+                            {{ grupo.nome }}
+                          </span>
+                          {% if grupo.nome|lower == 'todos' %}
+                            <span class="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-500">
+                              Global
+                            </span>
+                          {% endif %}
+                        </label>
+                      {% empty %}
+                        <div class="px-4 py-3 text-sm text-slate-500">
+                          Nenhum Grupo/Espaço disponível.
+                        </div>
+                      {% endfor %}
+                    </div>
+                  </div>
+                  <p class="mt-1 text-xs text-slate-500">
+                    Selecione um ou mais Grupos/Espaços aos quais o colaborador terá acesso.
+                  </p>
+
                 {% elif 'senha' in field.name.lower or 'password' in field.name.lower %}
                   <!-- Campo de Senha com o botão de Olho -->
-                  <label for="{{ field.id_for_label }}" class="mb-2 block text-sm font-semibold text-slate-700">{{ field.label }}</label>
+                  <label for="{{ field.id_for_label }}" class="mb-2 block text-sm font-semibold text-slate-700">
+                    {{ field.label }}
+                  </label>
                   <div class="relative w-full password-container">
-                    <div class="[&>input]:w-full [&>input]:rounded-xl [&>input]:border [&>input]:border-slate-300 [&>input]:px-4 [&>input]:py-2.5 [&>input]:pr-12 [&>input]:text-sm [&>input]:focus:border-[#00776d] [&>input]:focus:outline-none">
+                    <div class="[&*>input]:w-full [&*>input]:rounded-xl [&*>input]:border [&*>input]:border-slate-300 [&*>input]:px-4 [&*>input]:py-2.5 [&*>input]:pr-12 [&*>input]:text-sm [&*>input]:focus:border-[#00776d] [&*>input]:focus:outline-none">
                       {{ field }}
                     </div>
                     <button type="button" class="toggle-password-btn absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-400 hover:text-slate-600 focus:outline-none">
                       <!-- Ícone de Olho Fechado (Padrão) -->
                       <svg class="eye-closed h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.243 4.243L9.88 9.88" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.243 4.243L9.88 9.88"/>
                       </svg>
                       <!-- Ícone de Olho Aberto -->
                       <svg class="eye-open hidden h-5 w-5 text-[#00776d]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                       </svg>
                     </button>
                   </div>
 
                 {% else %}
-                  <label for="{{ field.id_for_label }}" class="mb-2 block text-sm font-semibold text-slate-700">{{ field.label }}</label>
+                  <label for="{{ field.id_for_label }}" class="mb-2 block text-sm font-semibold text-slate-700">
+                    {{ field.label }}
+                  </label>
                   {{ field }}
                 {% endif %}
 
                 {% if field.help_text %}
-                  <p class="mt-1 text-xs text-slate-500">{{ field.help_text }}</p>
+                  <p class="mt-1 text-xs text-slate-500">
+                    {{ field.help_text }}
+                  </p>
                 {% endif %}
-                
+
                 {% for error in field.errors %}
-                  <p class="mt-1 text-sm text-red-600">{{ error }}</p>
+                  <p class="mt-1 text-sm text-red-600">
+                    {{ error }}
+                  </p>
                 {% endfor %}
               </div>
             {% endfor %}
@@ -81,13 +132,12 @@
             </button>
           </form>
         </section>
-
       </div>
     </main>
   </div>
 
   <script>
-    // Script da Sidebar
+    // Sidebar
     const sidebar = document.getElementById('sidebar');
     const pageContent = document.getElementById('page-content');
     const toggle = document.getElementById('sidebar-toggle');
@@ -96,18 +146,23 @@
     if (toggle && sidebar) {
       toggle.addEventListener('click', () => {
         const collapsed = toggle.getAttribute('aria-expanded') === 'true';
+
         toggle.setAttribute('aria-expanded', String(!collapsed));
         toggle.setAttribute('aria-label', collapsed ? 'Expandir menu' : 'Recolher menu');
         toggle.setAttribute('title', collapsed ? 'Expandir menu' : 'Recolher menu');
+
         sidebar.classList.toggle('md:w-72', !collapsed);
         sidebar.classList.toggle('md:w-20', collapsed);
         pageContent.classList.toggle('md:ml-72', !collapsed);
         pageContent.classList.toggle('md:ml-20', collapsed);
-        labels.forEach((label) => label.classList.toggle('hidden', collapsed));
+
+        labels.forEach((label) => {
+          label.classList.toggle('hidden', collapsed);
+        });
       });
     }
 
-    // Script para alternar a visualização da senha
+    // Mostrar / ocultar senha
     document.querySelectorAll('.password-container').forEach(container => {
       const input = container.querySelector('input');
       const btn = container.querySelector('.toggle-password-btn');
@@ -117,6 +172,7 @@
       if (input && btn) {
         btn.addEventListener('click', () => {
           const isPassword = input.getAttribute('type') === 'password';
+
           input.setAttribute('type', isPassword ? 'text' : 'password');
 
           if (isPassword) {
@@ -128,6 +184,83 @@
           }
         });
       }
+    });
+
+    // Dropdown múltiplo de Grupos/Espaços
+    document.addEventListener('DOMContentLoaded', () => {
+      const dropdown = document.getElementById('grupos-dropdown');
+      const gruposToggle = document.getElementById('grupos-toggle');
+      const gruposMenu = document.getElementById('grupos-menu');
+      const gruposLabel = document.getElementById('grupos-label');
+      const gruposArrow = document.getElementById('grupos-arrow');
+
+      if (!dropdown || !gruposToggle || !gruposMenu || !gruposLabel) {
+        return;
+      }
+
+      const checkboxes = Array.from(gruposMenu.querySelectorAll('.grupo-checkbox'));
+
+      function atualizarLabel() {
+        const selecionados = checkboxes
+          .filter(checkbox => checkbox.checked)
+          .map(checkbox => checkbox.dataset.nome);
+
+        if (selecionados.length === 0) {
+          gruposLabel.textContent = 'Selecione os grupos';
+        } else if (selecionados.length <= 3) {
+          gruposLabel.textContent = selecionados.join(', ');
+        } else {
+          gruposLabel.textContent = `${selecionados.length} grupos selecionados`;
+        }
+      }
+
+      function abrirDropdown() {
+        gruposMenu.classList.remove('hidden');
+        gruposToggle.setAttribute('aria-expanded', 'true');
+        if (gruposArrow) {
+          gruposArrow.classList.add('rotate-180');
+        }
+      }
+
+      function fecharDropdown() {
+        gruposMenu.classList.add('hidden');
+        gruposToggle.setAttribute('aria-expanded', 'false');
+        if (gruposArrow) {
+          gruposArrow.classList.remove('rotate-180');
+        }
+      }
+
+      gruposToggle.addEventListener('click', event => {
+        event.stopPropagation();
+        const estaAberto = gruposToggle.getAttribute('aria-expanded') === 'true';
+
+        if (estaAberto) {
+          fecharDropdown();
+        } else {
+          abrirDropdown();
+        }
+      });
+
+      checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', () => {
+          atualizarLabel();
+        });
+      });
+
+      document.addEventListener('click', event => {
+        if (!dropdown.contains(event.target)) {
+          fecharDropdown();
+        }
+      });
+
+      document.addEventListener('keydown', event => {
+        if (event.key === 'Escape') {
+          fecharDropdown();
+          gruposToggle.focus();
+        }
+      });
+
+      atualizarLabel();
     });
   </script>
 </body>

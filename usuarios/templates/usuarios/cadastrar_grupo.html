@@ -1,0 +1,78 @@
+{% load static %}
+<!doctype html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>flexxHub | Cadastrar Grupo/Espaço</title>
+    <link rel="icon" type="image/png" href="{% static 'usuarios/images/Grupo Flexível_icon_color_X.png' %}">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+  <body class="bg-slate-50 text-slate-900">
+    {% include "usuarios/includes/sidebar.html" %}
+    
+    <div id="page-content" class="min-h-screen transition-all duration-300 md:ml-72">
+      <main class="p-6 lg:p-10">
+        <div class="mx-auto max-w-3xl">
+          <div class="mb-6">
+            <h1 class="text-2xl font-bold">Cadastrar Grupo/Espaço</h1>
+            <p class="mt-1 text-sm text-slate-600">Somente administradores podem administrar os grupos.</p>
+          </div>
+          
+          <section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <form method="post" class="space-y-5">
+              {% csrf_token %}
+              
+              {% if form.non_field_errors %}
+                <div class="rounded-xl bg-red-50 p-3 text-sm text-red-700">
+                  {{ form.non_field_errors }}
+                </div>
+              {% endif %}
+              
+              <div>
+                <label class="mb-1.5 block text-sm font-medium">{{ form.nome.label }}</label>
+                {{ form.nome }}
+                {{ form.nome.errors }}
+              </div>
+              
+              <div>
+                <label class="mb-1.5 block text-sm font-medium">{{ form.descricao.label }}</label>
+                {{ form.descricao }}
+                {{ form.descricao.errors }}
+              </div>
+              
+              <label class="flex items-center gap-3 rounded-xl border border-slate-200 p-4">
+                {{ form.ativo }}
+                <span class="text-sm font-medium">Ativo</span>
+              </label>
+              
+              <div class="flex justify-end gap-3">
+                <a href="{% url 'usuarios:gerenciar_grupos' %}" class="rounded-xl border border-slate-300 px-5 py-2.5 text-sm">Cancelar</a>
+                <button class="rounded-xl bg-[#00776d] px-5 py-2.5 text-sm font-semibold text-white">Salvar</button>
+              </div>
+            </form>
+          </section>
+        </div>
+      </main>
+    </div>
+
+    <script>
+      const sidebar = document.getElementById('sidebar'),
+            pageContent = document.getElementById('page-content'),
+            toggle = document.getElementById('sidebar-toggle'),
+            labels = document.querySelectorAll('.sidebar-label');
+      
+      if (toggle) {
+        toggle.addEventListener('click', () => {
+          const e = toggle.getAttribute('aria-expanded') === 'true';
+          toggle.setAttribute('aria-expanded', String(!e));
+          sidebar.classList.toggle('md:w-72', !e);
+          sidebar.classList.toggle('md:w-20', e);
+          pageContent.classList.toggle('md:ml-72', !e);
+          pageContent.classList.toggle('md:ml-20', e);
+          labels.forEach(l => l.classList.toggle('hidden', e));
+        });
+      }
+    </script>
+  </body>
+</html>

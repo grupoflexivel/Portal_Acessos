@@ -1,15 +1,16 @@
 from datetime import timedelta
+
 from django.contrib.auth.models import AbstractUser
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
+
 
 ICONE_RECURSO_CHOICES = [
     ("link", "Link"),
     ("globe", "Site / Internet"),
     ("document", "Documento"),
     ("folder", "Pasta / Arquivos"),
-    ("dashboard", "Dashboard / BI"),
     ("chart", "Gráfico / Relatórios"),
     ("computer", "Sistema / Aplicação"),
     ("database", "Banco de dados"),
@@ -46,27 +47,69 @@ class CentroCusto(models.Model):
         return f"{self.codigo} - {self.descricao}"
 
 
+class GrupoEspaco(models.Model):
+    nome = models.CharField(max_length=120, unique=True)
+    descricao = models.CharField(max_length=255, blank=True)
+    ativo = models.BooleanField(default=True)
+    grupo_sistema = models.BooleanField(
+        default=False,
+        editable=False,
+        help_text="Marca grupos internos protegidos contra exclusão/renomeação.",
+    )
+
+    class Meta:
+        verbose_name = "Grupo/Espaço"
+        verbose_name_plural = "Grupos/Espaços"
+        ordering = ("nome",)
+
+    def __str__(self):
+        return self.nome
+
+    @property
+    def eh_todos(self):
+        return self.nome.casefold() == "todos"
+
+
 class Ferramenta(models.Model):
+    # CAMPO LEGADO:
+    # Mantido temporariamente para evitar uma remoção destrutiva antes da migração
+    # dos dados antigos. O sistema novo NÃO usa centro_custo para autorização.
     centro_custo = models.ForeignKey(
         CentroCusto,
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
         related_name="ferramentas",
+        null=True,
+        blank=True,
+        editable=False,
     )
-    nome = models.CharField(max_length=255)
-    
-    # Opção 1: Upload de arquivos (PDF, imagens, planilhas, CSV, etc.)
-    arquivo = models.FileField(upload_to="ferramentas/", blank=True, null=True)
-    
-    # Opção 2: Link externo da web
-    url = models.URLField(max_length=500, blank=True, null=True)
 
-    logo = models.ImageField(upload_to="ferramentas/logos/", blank=True, null=True, verbose_name="Logo personalizada",)
-    
-    icone = models.CharField(max_length=30, choices=ICONE_RECURSO_CHOICES, blank=True, default="", verbose_name="Ícone",)
+    grupos = models.ManyToManyField(
+        GrupoEspaco,
+        related_name="ferramentas",
+        blank=True,
+        verbose_name="Grupos/Espaços",
+    )
+
+    nome = models.CharField(max_length=255)
+    arquivo = models.FileField(upload_to="ferramentas/", blank=True, null=True)
+    url = models.URLField(max_length=500, blank=True, null=True)
+    logo = models.ImageField(
+        upload_to="ferramentas/logos/",
+        blank=True,
+        null=True,
+        verbose_name="Logo personalizada",
+    )
+    icone = models.CharField(
+        max_length=30,
+        choices=ICONE_RECURSO_CHOICES,
+        blank=True,
+        default="",
+        verbose_name="Ícone",
+    )
 
     class Meta:
         verbose_name = "Ferramenta / Recurso"
-        verbose_name_plural = "Links/Arquivos Centro de Custos"
+        verbose_name_plural = "Ferramentas / Recursos"
         ordering = ("nome",)
 
     def __str__(self):
@@ -74,7 +117,6 @@ class Ferramenta(models.Model):
 
     def clean(self):
         super().clean()
-        # Valida se preencheu os dois ou nenhum
         if not self.arquivo and not self.url:
             raise ValidationError("Você deve preencher o campo de URL ou enviar um arquivo.")
         if self.arquivo and self.url:
@@ -82,21 +124,39 @@ class Ferramenta(models.Model):
 
 
 class LinkUtil(models.Model):
-    nome = models.CharField(max_length=255)
-    
-    # Opção 1: Upload de arquivos
-    arquivo = models.FileField(upload_to="links_uteis/", blank=True, null=True)
-    
-    # Opção 2: Link externo da web
-    url = models.URLField(max_length=500, blank=True, null=True)
+    """Modelo legado de recursos gerais.
 
-    logo = models.ImageField(upload_to="links_uteis/logos/", blank=True, null=True, verbose_name="Logo personalizada",)
-    
-    icone = models.CharField(max_length=30, choices=ICONE_RECURSO_CHOICES, blank=True, default="", verbose_name="Ícone",)
+    Ele é mantido para compatibilidade com os registros existentes. A partir desta
+    alteração, também recebe grupos/espaços e participa da mesma regra de acesso.
+    Novos recursos são cadastrados preferencialmente em Ferramenta.
+    """
+
+    grupos = models.ManyToManyField(
+        GrupoEspaco,
+        related_name="links_uteis",
+        blank=True,
+        verbose_name="Grupos/Espaços",
+    )
+    nome = models.CharField(max_length=255)
+    arquivo = models.FileField(upload_to="links_uteis/", blank=True, null=True)
+    url = models.URLField(max_length=500, blank=True, null=True)
+    logo = models.ImageField(
+        upload_to="links_uteis/logos/",
+        blank=True,
+        null=True,
+        verbose_name="Logo personalizada",
+    )
+    icone = models.CharField(
+        max_length=30,
+        choices=ICONE_RECURSO_CHOICES,
+        blank=True,
+        default="",
+        verbose_name="Ícone",
+    )
 
     class Meta:
-        verbose_name = "Links Colaboradores"
-        verbose_name_plural = "Links/Arquivos Colaboradores"
+        verbose_name = "Link legado"
+        verbose_name_plural = "Links legados"
         ordering = ("nome",)
 
     def __str__(self):
@@ -104,7 +164,6 @@ class LinkUtil(models.Model):
 
     def clean(self):
         super().clean()
-        # Valida se preencheu os dois ou nenhum
         if not self.arquivo and not self.url:
             raise ValidationError("Você deve preencher o campo de URL ou enviar um arquivo.")
         if self.arquivo and self.url:
@@ -146,6 +205,13 @@ class Funcionario(AbstractUser):
         blank=True,
         related_name="funcionarios",
     )
+    grupos = models.ManyToManyField(
+        GrupoEspaco,
+        related_name="funcionarios",
+        blank=True,
+        verbose_name="Grupos/Espaços",
+    )
+
     ativo = models.BooleanField(default=True)
     deve_trocar_senha = models.BooleanField(default=False)
     vinculado_ad = models.BooleanField(
@@ -173,5 +239,5 @@ class Funcionario(AbstractUser):
             return True
         if self.bloqueado_ate and timezone.now() >= self.bloqueado_ate:
             self.bloqueado_ate = None
-            self.save(update_fields=['bloqueado_ate'])
+            self.save(update_fields=["bloqueado_ate"])
         return False

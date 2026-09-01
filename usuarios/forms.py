@@ -1,10 +1,34 @@
 ﻿import unicodedata
 from django import forms
 from django.contrib.auth.forms import PasswordChangeForm
-from .models import (CentroCusto, Funcionario, ICONE_RECURSO_CHOICES,)
 
+from .models import (Funcionario, GrupoEspaco, ICONE_RECURSO_CHOICES,)
+
+CAMPO_PADRAO = (
+    "w-full rounded-xl border border-slate-300 bg-white px-4 py-3 "
+    "text-sm text-slate-900 outline-none transition focus:border-[#00776d] "
+    "focus:ring-4 focus:ring-emerald-700/10"
+)
+
+CHECKBOX = (
+    "h-4 w-4 rounded border-slate-300 text-[#00776d] focus:ring-[#00776d]"
+)
+
+class GrupoCheckboxSelectMultiple(forms.CheckboxSelectMultiple):
+    option_template_name = "django/forms/widgets/checkbox_option.html"
 
 class FuncionarioCadastroForm(forms.ModelForm):
+    grupos = forms.ModelMultipleChoiceField(
+        queryset=GrupoEspaco.objects.none(),
+        required=True,
+        label="Grupos/Espaços",
+        widget=GrupoCheckboxSelectMultiple,
+        help_text=(
+            "O grupo Todos libera acesso a todos os espaços. Para segregar o usuário, "
+            "desmarque Todos e selecione um ou mais grupos específicos."
+        ),
+    )
+
     class Meta:
         model = Funcionario
         fields = (
@@ -13,22 +37,26 @@ class FuncionarioCadastroForm(forms.ModelForm):
             "unidade_fabril",
             "centro_custo",
             "departamento",
+            "grupos",
             "ativo",
             "vinculado_ad",
         )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.fields["grupos"].queryset = GrupoEspaco.objects.filter(ativo=True).order_by("nome")
+
         for nome, campo in self.fields.items():
             if nome in ("ativo", "vinculado_ad"):
-                campo.widget.attrs["class"] = "h-4 w-4 rounded border-slate-300 text-[#00776d] focus:ring-[#00776d]"
-            else:
-                campo.widget.attrs["class"] = "w-full rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-[#00776d] focus:ring-4 focus:ring-emerald-700/10"
+                campo.widget.attrs["class"] = CHECKBOX
+            elif nome != "grupos":
+                campo.widget.attrs["class"] = CAMPO_PADRAO
 
             if isinstance(campo, forms.ModelChoiceField):
                 campo.empty_label = "-- Selecione uma opção --"
-            elif isinstance(campo, forms.ChoiceField) and not campo.required:
-                campo.choices = [("", "Selecione uma opção")] + [c for c in campo.choices if c[0] != ""]
+                # Centro de Custo é apenas para registro, não é obrigatório
+                if nome == "centro_custo":
+                    campo.required = False
 
     def clean_email(self):
         email = self.cleaned_data.get("email")
@@ -53,12 +81,8 @@ class FuncionarioCadastroForm(forms.ModelForm):
         partes = nome_limpo.split()
         if not partes:
             return "usuario"
-        
-        if len(partes) == 1:
-            base_username = partes[0]
-        else:
-            base_username = f"{partes[0]}.{partes[-1]}"
-            
+
+        base_username = partes[0] if len(partes) == 1 else f"{partes[0]}.{partes[-1]}"
         username = base_username
         contador = 1
         
@@ -76,12 +100,12 @@ class FuncionarioCadastroForm(forms.ModelForm):
             funcionario.set_unusable_password()
             funcionario.deve_trocar_senha = False
         else:
-            senha_padrao = "MudarSenha123"
-            funcionario.set_password(senha_padrao)
+            funcionario.set_password("MudarSenha123")
             funcionario.deve_trocar_senha = True
 
         if commit:
             funcionario.save()
+            self.save_m2m()
         return funcionario
 
 
@@ -100,107 +124,118 @@ class AlterarSenhaForm(PasswordChangeForm):
 
 
 class CadastroRecursoForm(forms.Form):
-    TIPO_CHOICES = (
-        ('colaborador', 'Links/Arquivos Colaboradores (Geral)'),
-        ('centro_custo', 'Links/Arquivos Centro de Custos'),
+    grupos = forms.ModelMultipleChoiceField(
+        queryset=GrupoEspaco.objects.none(),
+        required=True,
+        label="Disponibilizar para os Grupos/Espaços",
+        widget=GrupoCheckboxSelectMultiple,
+        help_text="Selecione um ou mais grupos. Todos disponibiliza o recurso para qualquer usuário.",
     )
-
-    tipo_destino = forms.ChoiceField(
-        choices=TIPO_CHOICES,
-        widget=forms.Select(attrs={
-            'class': 'w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 shadow-sm focus:border-[#00776d] focus:outline-none focus:ring-1 focus:ring-[#00776d]'
-        }),
-        label="Destino"
-    )
-    
-    centro_custo = forms.ModelChoiceField(
-        queryset=CentroCusto.objects.all(),
-        required=False,
-        widget=forms.Select(attrs={
-            'class': 'w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 shadow-sm focus:border-[#00776d] focus:outline-none focus:ring-1 focus:ring-[#00776d]'
-        }),
-        label="Centro de Custo (Obrigatório se o destino for Centro de Custos)"
-    )
-
     nome = forms.CharField(
         max_length=255,
-        widget=forms.TextInput(attrs={
-            'class': 'w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 shadow-sm placeholder-slate-400 focus:border-[#00776d] focus:outline-none focus:ring-1 focus:ring-[#00776d]',
-            'placeholder': 'Ex: Sistema de Ponto / Manual de Vendas'
-        }),
-        label="Nome"
+        label="Nome",
+        widget=forms.TextInput(
+            attrs={
+                "class": CAMPO_PADRAO,
+                "placeholder": "Ex: Sistema de Ponto / Manual de Vendas",
+            }
+        ),
     )
 
     arquivo = forms.FileField(
         required=False,
-        widget=forms.ClearableFileInput(attrs={
-            'class': 'w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-emerald-50 file:text-[#00776d] hover:file:bg-emerald-100 cursor-pointer'
-        }),
-        label="Enviar Arquivo"
+        label="Enviar Arquivo",
+        widget=forms.ClearableFileInput(
+            attrs={
+                "class": (
+                    "w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 "
+                    "file:rounded-xl file:border-0 file:text-sm file:font-semibold "
+                    "file:bg-emerald-50 file:text-[#00776d] hover:file:bg-emerald-100 cursor-pointer"
+                )
+            }
+        ),
     )
-
     url = forms.URLField(
         max_length=500,
         required=False,
-        widget=forms.URLInput(attrs={
-            'class': 'w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 shadow-sm placeholder-slate-400 focus:border-[#00776d] focus:outline-none focus:ring-1 focus:ring-[#00776d]',
-            'placeholder': 'https://exemplo.com'
-        }),
-        label="Link da URL (Externo)"
+        label="Link da URL (Externo)",
+        widget=forms.URLInput(
+            attrs={
+                "class": CAMPO_PADRAO,
+                "placeholder": "https://exemplo.com",
+            }
+        ),
     )
-
     logo = forms.ImageField(
         required=False,
         label="Logo personalizada",
-        widget=forms.ClearableFileInput(attrs={"accept": ("image/png," "image/jpeg," "image/webp," "image/gif"), "class": ("w-full text-sm text-slate-500 " "file:mr-4 file:py-2 file:px-4 " "file:rounded-xl file:border-0 " "file:text-sm file:font-semibold " "file:bg-emerald-50 " "file:text-[#00776d] " "hover:file:bg-emerald-100 " "cursor-pointer"),}),
+        widget=forms.ClearableFileInput(
+            attrs={
+                "accept": "image/png,image/jpeg,image/webp,image/gif",
+                "class": (
+                    "w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 "
+                    "file:rounded-xl file:border-0 file:text-sm file:font-semibold "
+                    "file:bg-emerald-50 file:text-[#00776d] hover:file:bg-emerald-100 cursor-pointer"
+                ),
+            }
+        ),
     )
-    
     icone = forms.ChoiceField(
         choices=[("", "Selecione um ícone padrão")] + ICONE_RECURSO_CHOICES,
         required=False,
-        widget=forms.Select(attrs={'class': 'w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-900 shadow-sm focus:border-[#00776d] focus:outline-none focus:ring-1 focus:ring-[#00776d]'}),
         label="Ícone Padrão",
+        widget=forms.Select(attrs={"class": CAMPO_PADRAO}),
     )
-    
-    def __init__(self, *args, **kwargs):
+
+    def __init__(self, *args, recurso=None, **kwargs):
+        self.recurso = recurso
         super().__init__(*args, **kwargs)
-        for nome, campo in self.fields.items():
-            if isinstance(campo, forms.ModelChoiceField):
-                campo.empty_label = "-- Selecione uma opção --"
-            elif isinstance(campo, forms.ChoiceField) and not campo.required:
-                campo.choices = [("", "-- Selecione uma opção --")] + [c for c in campo.choices if c[0] != ""]
+        self.fields["grupos"].queryset = GrupoEspaco.objects.filter(ativo=True).order_by("nome")
+
+        if not self.is_bound and not recurso:
+            grupo_todos = GrupoEspaco.objects.filter(nome__iexact="Todos", ativo=True).first()
+            if grupo_todos:
+                self.initial.setdefault("grupos", [grupo_todos.pk])
 
     def clean(self):
         cleaned_data = super().clean()
-        tipo = cleaned_data.get('tipo_destino')
-        cc = cleaned_data.get('centro_custo')
-        arquivo = cleaned_data.get('arquivo')
-        url = cleaned_data.get('url')
+        arquivo = cleaned_data.get("arquivo")
+        url = cleaned_data.get("url")
 
-        if tipo == 'centro_custo' and not cc:
-            raise forms.ValidationError("Você deve selecionar um Centro de Custo para este tipo de destino.")
+        arquivo_existente = bool(getattr(self.recurso, "arquivo", None))
+        url_existente = bool(getattr(self.recurso, "url", None))
 
-        if not arquivo and not url:
-            raise forms.ValidationError("Você deve preencher o campo de URL ou enviar um arquivo.")
+        if not arquivo and not url and not arquivo_existente and not url_existente:
+            raise forms.ValidationError(
+                "Você deve preencher o campo de URL ou enviar um arquivo."
+            )
+
+        # Quando o usuário informa uma nova URL, ela substitui o arquivo existente.
+        # Quando envia um novo arquivo, ele substitui a URL existente.
         if arquivo and url:
-            raise forms.ValidationError("Preencha apenas um: ou o arquivo ou o link da URL, não ambos.")
-
+            raise forms.ValidationError(
+                "Preencha apenas um: ou o arquivo ou o link da URL, não ambos."
+            )
         return cleaned_data
 
 
 class FuncionarioEdicaoForm(forms.ModelForm):
+    grupos = forms.ModelMultipleChoiceField(
+        queryset=GrupoEspaco.objects.none(),
+        required=True,
+        label="Grupos/Espaços",
+        widget=GrupoCheckboxSelectMultiple,
+        help_text=(
+            "Todos libera acesso a todos os espaços. Para segregar, desmarque Todos "
+            "e selecione um ou mais grupos específicos."
+        ),
+    )
     nova_senha = forms.CharField(
         label="Nova senha",
         required=False,
         widget=forms.PasswordInput(
             attrs={
-                "class": (
-                    "w-full rounded-xl border border-slate-300 "
-                    "bg-white px-4 py-3 pr-12 text-sm text-slate-900 "
-                    "outline-none transition "
-                    "focus:border-[#00776d] "
-                    "focus:ring-4 focus:ring-emerald-700/10"
-                ),
+                "class": CAMPO_PADRAO,
                 "placeholder": "Deixe em branco para manter a senha atual",
                 "autocomplete": "new-password",
             }
@@ -212,13 +247,7 @@ class FuncionarioEdicaoForm(forms.ModelForm):
         required=False,
         widget=forms.PasswordInput(
             attrs={
-                "class": (
-                    "w-full rounded-xl border border-slate-300 "
-                    "bg-white px-4 py-3 pr-12 text-sm text-slate-900 "
-                    "outline-none transition "
-                    "focus:border-[#00776d] "
-                    "focus:ring-4 focus:ring-emerald-700/10"
-                ),
+                "class": CAMPO_PADRAO,
                 "placeholder": "Repita a nova senha",
                 "autocomplete": "new-password",
             }
@@ -234,6 +263,7 @@ class FuncionarioEdicaoForm(forms.ModelForm):
             "unidade_fabril",
             "centro_custo",
             "departamento",
+            "grupos",
             "ativo",
             "is_staff",
             "vinculado_ad",
@@ -241,48 +271,45 @@ class FuncionarioEdicaoForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
-        campo_padrao = (
-            "w-full rounded-xl border border-slate-300 "
-            "bg-white px-4 py-3 text-sm text-slate-900 "
-            "outline-none transition "
-            "focus:border-[#00776d] "
-            "focus:ring-4 focus:ring-emerald-700/10"
-        )
-
-        checkbox = (
-            "h-5 w-5 rounded border-slate-300 "
-            "text-[#00776d] focus:ring-[#00776d]"
-        )
+        self.fields["grupos"].queryset = GrupoEspaco.objects.filter(ativo=True).order_by("nome")
 
         for nome, campo in self.fields.items():
             if nome in ["ativo", "is_staff", "vinculado_ad"]:
-                campo.widget.attrs["class"] = checkbox
-            elif nome not in ["nova_senha", "confirmar_senha"]:
-                campo.widget.attrs["class"] = campo_padrao
+                campo.widget.attrs["class"] = CHECKBOX
+            elif nome not in ["grupos", "nova_senha", "confirmar_senha"]:
+                campo.widget.attrs["class"] = CAMPO_PADRAO
 
             if isinstance(campo, forms.ModelChoiceField):
                 campo.empty_label = "-- Selecione uma opção --"
+                # Centro de Custo é apenas para registro, não é obrigatório
+                if nome == "centro_custo":
+                    campo.required = False
 
         self.fields["username"].label = "Usuário"
         self.fields["nome"].label = "Nome"
         self.fields["email"].label = "E-mail"
         self.fields["unidade_fabril"].label = "Unidade Fabril"
-        self.fields["centro_custo"].label = "Centro de Custo Principal"
+        self.fields["centro_custo"].label = "Centro de Custo"
         self.fields["departamento"].label = "Departamento"
         self.fields["ativo"].label = "Usuário ativo"
         self.fields["is_staff"].label = "Staff"
         self.fields["vinculado_ad"].label = "Vinculado ao Active Directory"
         self.fields["vinculado_ad"].help_text = (
-            "O usuário informado acima deve ser exatamente igual ao login "
-            "de rede (sAMAccountName) do colaborador no AD."
+            "O usuário informado acima deve ser exatamente igual ao login de rede "
+            "(sAMAccountName) do colaborador no AD."
         )
 
     def clean_nome(self):
         nome = self.cleaned_data.get("nome")
-        if nome:
-            return nome.upper()
-        return nome
+        return nome.upper() if nome else nome
+
+    def clean_email(self):
+        email = self.cleaned_data.get("email")
+        if email:
+            qs = Funcionario.objects.filter(email__iexact=email).exclude(pk=self.instance.pk)
+            if qs.exists():
+                raise forms.ValidationError("Este e-mail já está cadastrado no sistema.")
+        return email
 
     def clean(self):
         cleaned_data = super().clean()
@@ -324,5 +351,36 @@ class FuncionarioEdicaoForm(forms.ModelForm):
 
         if commit:
             funcionario.save()
-
+            self.save_m2m()
         return funcionario
+
+
+class GrupoEspacoForm(forms.ModelForm):
+    class Meta:
+        model = GrupoEspaco
+        fields = ["nome", "descricao", "ativo"]
+        widgets = {
+            "nome": forms.TextInput(attrs={"class": CAMPO_PADRAO, "placeholder": "Ex: Financeiro"}),
+            "descricao": forms.TextInput(
+                attrs={"class": CAMPO_PADRAO, "placeholder": "Descrição opcional do grupo/espaço"}
+            ),
+            "ativo": forms.CheckboxInput(attrs={"class": CHECKBOX}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance and self.instance.pk and self.instance.grupo_sistema:
+            self.fields["nome"].disabled = True
+            self.fields["ativo"].disabled = True
+            self.fields["nome"].help_text = "Este é um grupo do sistema e não pode ser renomeado."
+            self.fields["ativo"].help_text = "O grupo Todos deve permanecer ativo."
+
+    def clean_nome(self):
+        nome = (self.cleaned_data.get("nome") or "").strip()
+        if nome.casefold() == "todos":
+            existente = GrupoEspaco.objects.filter(nome__iexact="Todos")
+            if self.instance.pk:
+                existente = existente.exclude(pk=self.instance.pk)
+            if existente.exists():
+                raise forms.ValidationError("Já existe o grupo reservado Todos.")
+        return nome
