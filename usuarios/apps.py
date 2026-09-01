@@ -4,10 +4,11 @@ from django.db.models.signals import post_migrate
 def criar_grupo_todos(sender, **kwargs):
     GrupoEspaco = sender.get_model("GrupoEspaco")
 
-    GrupoEspaco.objects.get_or_create(
-        nome="Todos",
+    # Cria o grupo "Espaço Geral" (padrão universal)
+    GrupoEspaco.objects.update_or_create(
+        nome="Espaço Geral",
         defaults={
-            "descricao": "Grupo padrão com acesso a todos os Grupos/Espaços.",
+            "descricao": "Espaço Geral para todos colaboradores.",
             "ativo": True,
             "grupo_sistema": True,
         },

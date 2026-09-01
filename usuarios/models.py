@@ -67,7 +67,8 @@ class GrupoEspaco(models.Model):
 
     @property
     def eh_todos(self):
-        return self.nome.casefold() == "todos"
+        nome_lower = self.nome.casefold()
+        return nome_lower in ("espaço geral", "geral")
 
 
 class Ferramenta(models.Model):

@@ -19,7 +19,7 @@
         <div class="mb-6 flex items-end justify-between">
           <div>
             <h1 class="text-2xl font-bold">Gerenciar Grupos/Espaços</h1>
-            <p class="mt-1 text-sm text-slate-600">O grupo Todos é protegido e funciona como acesso global.</p>
+            <p class="mt-1 text-sm text-slate-600">O Espaço Geral é protegido e funciona como acesso global.</p>
           </div>
           <a href="{% url 'usuarios:cadastrar_grupo' %}" class="rounded-xl bg-[#00776d] px-4 py-2.5 text-sm font-semibold text-white">Novo Grupo/Espaço</a>
         </div>
@@ -56,7 +56,10 @@
                     </span>
                   </td>
                   <td class="px-5 py-4 text-right">
-                    <a href="{% url 'usuarios:editar_grupo' grupo.id %}" class="text-sm font-semibold text-[#00776d] hover:underline">Editar</a>
+                    {% if not grupo.eh_todos %}
+                    <a href="{% url 'usuarios:adicionar_membros_grupo' grupo.id %}" class="text-sm font-semibold text-[#00776d] hover:underline mr-3">Membros</a>
+                    {% endif %}
+                    <a href="{% url 'usuarios:editar_grupo' grupo.id %}" class="text-sm font-semibold text-slate-700 hover:underline">Editar</a>
                     {% if not grupo.grupo_sistema and not grupo.eh_todos %}
                       <form method="post" action="{% url 'usuarios:excluir_grupo' grupo.id %}" class="ml-3 inline" onsubmit="return confirm('Excluir este Grupo/Espaço?');">
                         {% csrf_token %}

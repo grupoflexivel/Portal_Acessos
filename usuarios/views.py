@@ -8,6 +8,7 @@ from django.db.models import Count, Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.utils import timezone
+from django.db.models import Q, Case, When, Value, BooleanField
 
 from .forms import (
     AlterarSenhaForm,
@@ -141,13 +142,22 @@ def logout_view(request):
 
 
 def _grupo_todos():
-    return GrupoEspaco.objects.filter(nome__iexact="Todos", ativo=True).first()
+    """Retorna o grupo universal (Espaço Geral). Compatível com 'Todos' legado."""
+    from django.db.models import Q
+    return GrupoEspaco.objects.filter(
+        Q(nome__iexact="Espaço Geral"),
+        ativo=True
+    ).first()
 
 
 def _usuario_tem_acesso_total(user):
     if user.is_superuser:
         return True
-    return user.grupos.filter(nome__iexact="Todos", ativo=True).exists()
+    from django.db.models import Q
+    return user.grupos.filter(
+        Q(nome__iexact="Espaço Geral"),
+        ativo=True
+    ).exists()
 
 
 def _grupos_visiveis_para_usuario(user):
@@ -156,7 +166,9 @@ def _grupos_visiveis_para_usuario(user):
         return ativos.order_by("nome")
 
     ids_usuario = user.grupos.filter(ativo=True).values_list("pk", flat=True)
-    return ativos.filter(Q(pk__in=ids_usuario) | Q(nome__iexact="Todos")).distinct().order_by("nome")
+    return ativos.filter(
+        Q(pk__in=ids_usuario) | Q(nome__iexact="Espaço Geral")
+    ).distinct().order_by("nome")
 
 
 def _recursos_do_grupo(grupo):
@@ -178,7 +190,7 @@ def _recursos_por_grupo_para_usuario(user):
 
     grupos_visiveis.sort(
         key=lambda grupo: (
-            0 if grupo.nome.casefold() == "todos" else 1,
+            0 if grupo.nome.casefold() in ("espaço geral", "geral") else 1,
             grupo.nome.casefold()
         )
     )
@@ -499,12 +511,15 @@ def editar_recurso(request, tipo, pk):
             messages.success(request, f"O recurso '{recurso.nome}' foi atualizado com sucesso!")
             return redirect("usuarios:gerenciar_recursos")
     else:
-        # Se o recurso não tem grupos, usa "Todos" como padrão
+        # Se o recurso não tem grupos, usa "Espaço Geral" como padrão
         grupos_ids = list(recurso.grupos.values_list("pk", flat=True))
         if not grupos_ids:
-            grupo_todos = GrupoEspaco.objects.filter(nome__iexact="Todos", ativo=True).first()
-            if grupo_todos:
-                grupos_ids = [grupo_todos.pk]
+            grupo_geral = GrupoEspaco.objects.filter(
+                Q(nome__iexact="Espaço Geral"),
+                ativo=True
+            ).first()
+            if grupo_geral:
+                grupos_ids = [grupo_geral.pk]
         
         form = CadastroRecursoForm(
             recurso=recurso,
@@ -607,7 +622,7 @@ def excluir_grupo(request, grupo_id):
 
     grupo = get_object_or_404(GrupoEspaco, pk=grupo_id)
     if grupo.grupo_sistema or grupo.eh_todos:
-        messages.error(request, "O grupo Todos é estrutural e não pode ser excluído.")
+        messages.error(request, "O Espaço Geral é estrutural e não pode ser excluído.")
         return redirect("usuarios:gerenciar_grupos")
 
     if grupo.funcionarios.exists() or grupo.ferramentas.exists() or grupo.links_uteis.exists():
@@ -621,3 +636,66 @@ def excluir_grupo(request, grupo_id):
     grupo.delete()
     messages.success(request, f"Grupo/Espaço '{nome}' excluído com sucesso!")
     return redirect("usuarios:gerenciar_grupos")
+
+@login_required
+def adicionar_membros_grupo(request, grupo_id):
+    _exigir_superuser(request.user)
+    grupo = get_object_or_404(GrupoEspaco, pk=grupo_id)
+
+    # Impede o gerenciamento manual de membros para o grupo universal "Espaço Geral"
+    if getattr(grupo, 'eh_todos', False):
+        messages.warning(request, f"O grupo '{grupo.nome}' é de acesso universal automático e não requer gerenciamento manual de membros.")
+        return redirect("usuarios:gerenciar_grupos")
+
+    usuarios_base = Funcionario.objects.select_related("centro_custo", "departamento").prefetch_related("grupos")
+
+    centro_custo_id = request.GET.get("centro_custo", "")
+    if centro_custo_id and centro_custo_id.isdigit():
+        usuarios_base = usuarios_base.filter(centro_custo_id=int(centro_custo_id))
+
+    q = request.GET.get("q", "").strip()
+    if q:
+        usuarios_base = usuarios_base.filter(
+            Q(nome__icontains=q) |
+            Q(username__icontains=q) |
+            Q(email__icontains=q) |
+            Q(centro_custo__descricao__icontains=q) |
+            Q(centro_custo__codigo__icontains=q) |
+            Q(departamento__nome__icontains=q)
+        )
+
+    usuarios_base = usuarios_base.annotate(
+        ja_membro=Case(
+            When(grupos=grupo, then=Value(True)),
+            default=Value(False),
+            output_field=BooleanField()
+        )
+    ).order_by("-ja_membro", "nome", "username")
+
+    if request.method == "POST":
+        usuarios_ids_marcados = [int(uid) for uid in request.POST.getlist("usuarios_ids")]
+        ids_visiveis = list(usuarios_base.values_list('id', flat=True))
+        
+        para_adicionar = [uid for uid in usuarios_ids_marcados if uid in ids_visiveis]
+        membros_atuais_visiveis = list(
+            Funcionario.objects.filter(id__in=ids_visiveis, grupos=grupo).values_list('id', flat=True)
+        )
+        para_remover = [uid for uid in membros_atuais_visiveis if uid not in usuarios_ids_marcados]
+
+        if para_adicionar:
+            grupo.funcionarios.add(*para_adicionar)
+        if para_remover:
+            grupo.funcionarios.remove(*para_remover)
+
+        messages.success(request, f"Membros do grupo '{grupo.nome}' atualizados com sucesso!")
+        return redirect("usuarios:adicionar_membros_grupo", grupo_id=grupo.pk)
+
+    context = _contexto_sidebar(request.user)
+    context.update({
+        "grupo": grupo,
+        "usuarios_disponiveis": usuarios_base,
+        "centros_custo": CentroCusto.objects.all().order_by("codigo", "descricao"),
+        "centro_custo_selecionado": centro_custo_id,
+        "termo_busca": q,
+    })
+    return render(request, "usuarios/adicionar_membros.html", context)

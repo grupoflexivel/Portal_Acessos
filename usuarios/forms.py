@@ -20,12 +20,12 @@ class GrupoCheckboxSelectMultiple(forms.CheckboxSelectMultiple):
 class FuncionarioCadastroForm(forms.ModelForm):
     grupos = forms.ModelMultipleChoiceField(
         queryset=GrupoEspaco.objects.none(),
-        required=True,
+        required=False,
         label="Grupos/Espaços",
         widget=GrupoCheckboxSelectMultiple,
         help_text=(
-            "O grupo Todos libera acesso a todos os espaços. Para segregar o usuário, "
-            "desmarque Todos e selecione um ou mais grupos específicos."
+            "O 'Espaço Geral' é aplicado automaticamente a todos os colaboradores. "
+            "Selecione apenas os grupos específicos adicionais, se necessário."
         ),
     )
 
@@ -44,7 +44,8 @@ class FuncionarioCadastroForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["grupos"].queryset = GrupoEspaco.objects.filter(ativo=True).order_by("nome")
+        # Oculta o "Espaço Geral" das opções manuais para evitar que seja desmarcado
+        self.fields["grupos"].queryset = GrupoEspaco.objects.filter(ativo=True).exclude(nome__iexact="espaço geral").order_by("nome")
 
         for nome, campo in self.fields.items():
             if nome in ("ativo", "vinculado_ad"):
@@ -106,6 +107,12 @@ class FuncionarioCadastroForm(forms.ModelForm):
         if commit:
             funcionario.save()
             self.save_m2m()
+            
+            # GARANTE A INCLUSÃO AUTOMÁTICA DO ESPAÇO GERAL
+            grupo_geral = GrupoEspaco.objects.filter(nome__iexact="espaço geral", ativo=True).first()
+            if grupo_geral:
+                funcionario.grupos.add(grupo_geral)
+
         return funcionario
 
 
@@ -222,12 +229,12 @@ class CadastroRecursoForm(forms.Form):
 class FuncionarioEdicaoForm(forms.ModelForm):
     grupos = forms.ModelMultipleChoiceField(
         queryset=GrupoEspaco.objects.none(),
-        required=True,
+        required=False,
         label="Grupos/Espaços",
         widget=GrupoCheckboxSelectMultiple,
         help_text=(
-            "Todos libera acesso a todos os espaços. Para segregar, desmarque Todos "
-            "e selecione um ou mais grupos específicos."
+            "O 'Espaço Geral' é mantido automaticamente. "
+            "Selecione abaixo os grupos específicos adicionais do colaborador."
         ),
     )
     nova_senha = forms.CharField(
@@ -271,7 +278,7 @@ class FuncionarioEdicaoForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["grupos"].queryset = GrupoEspaco.objects.filter(ativo=True).order_by("nome")
+        self.fields["grupos"].queryset = GrupoEspaco.objects.filter(ativo=True).exclude(nome__iexact="espaço geral").order_by("nome")
 
         for nome, campo in self.fields.items():
             if nome in ["ativo", "is_staff", "vinculado_ad"]:
@@ -352,6 +359,11 @@ class FuncionarioEdicaoForm(forms.ModelForm):
         if commit:
             funcionario.save()
             self.save_m2m()
+            
+            grupo_geral = GrupoEspaco.objects.filter(nome__iexact="espaço geral", ativo=True).first()
+            if grupo_geral:
+                funcionario.grupos.add(grupo_geral)
+
         return funcionario
 
 

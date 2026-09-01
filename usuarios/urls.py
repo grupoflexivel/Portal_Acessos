@@ -29,6 +29,7 @@ urlpatterns = [
     path("grupos/gerenciar/", views.gerenciar_grupos, name="gerenciar_grupos"),
     path("grupos/<int:grupo_id>/editar/", views.editar_grupo, name="editar_grupo"),
     path("grupos/<int:grupo_id>/excluir/", views.excluir_grupo, name="excluir_grupo"),
+    path("grupos/<int:grupo_id>/membros/adicionar/", views.adicionar_membros_grupo, name="adicionar_membros_grupo"),
 ]
 
 if settings.DEBUG:
