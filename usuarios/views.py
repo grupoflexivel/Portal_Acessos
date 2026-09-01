@@ -280,34 +280,48 @@ def cadastrar_recurso_admin(request, recurso_id=None):
 
     if request.method == "POST":
         form = CadastroRecursoForm(request.POST, request.FILES, recurso=recurso)
-        print("FORM É VÁLIDO?", form.is_valid())
-        print("ERROS DO FORMULÁRIO:", form.errors)
         if form.is_valid():
+            if not recurso:
+                # CRIAÇÃO DE NOVO RECURSO
+                recurso = Ferramenta()
 
-            if recurso:
-                # MODO EDIÇÃO
-                recurso.nome = form.cleaned_data["nome"]
-                recurso.url = form.cleaned_data["url"]
-                recurso.icone = form.cleaned_data["icone"]
+            # Atribuição comum para criação e edição
+            recurso.nome = form.cleaned_data["nome"]
+            recurso.url = form.cleaned_data["url"]
+            recurso.icone = form.cleaned_data["icone"]
 
-                # Tratamento para limpar ou atualizar a LOGO
-                if form.cleaned_data.get("remover_logo") == "sim":
-                    if recurso.logo:
-                        recurso.logo.delete(save=False)
-                    recurso.logo = None
-                    print("--> LOGO FOI DEFINIDA COMO NONE NO OBJETO <---")
-                elif form.cleaned_data.get("logo"):
-                    recurso.logo = form.cleaned_data["logo"]
+            # Tratamento de arquivo/logo
+            novo_arquivo = form.cleaned_data.get("arquivo")
+            if novo_arquivo:
+                recurso.arquivo = novo_arquivo
+                recurso.url = ""
 
-                recurso.save()
-                print("--- RECURSO SALVO NO BANCO COM SUCESSO ---")
-                
-                recurso.grupos.set(form.cleaned_data["grupos"])
-                messages.success(request, f"Recurso '{recurso.nome}' atualizado com sucesso!")
+            if form.cleaned_data.get("remover_logo") == "sim":
+                if recurso.logo:
+                    recurso.logo.delete(save=False)
+                recurso.logo = None
+            elif form.cleaned_data.get("logo"):
+                recurso.logo = form.cleaned_data["logo"]
+
+            recurso.save()
             
+            # Vincula os grupos (relação Many-to-Many)
+            recurso.grupos.set(form.cleaned_data["grupos"])
+
+            acao = "atualizado" if recurso_id else "cadastrado"
+            messages.success(request, f"Recurso '{recurso.nome}' {acao} com sucesso!")
             return redirect("usuarios:gerenciar_recursos")
     else:
-        form = CadastroRecursoForm()
+        initial_data = {}
+        if recurso:
+            grupos_ids = list(recurso.grupos.values_list("pk", flat=True))
+            initial_data = {
+                "nome": recurso.nome,
+                "url": recurso.url,
+                "icone": recurso.icone,
+                "grupos": grupos_ids,
+            }
+        form = CadastroRecursoForm(initial=initial_data, recurso=recurso)
 
     context = _contexto_sidebar(request.user)
     context["form"] = form
