@@ -543,8 +543,11 @@ def editar_recurso(request, tipo, pk):
             },
         )
 
+    # Converte os IDs do recurso para string para uso seguro no template
+    grupos_atuais_ids_str = [str(pk) for pk in recurso.grupos.values_list("pk", flat=True)]
+
     context = _contexto_sidebar(request.user)
-    context.update({"form": form, "recurso": recurso, "tipo": tipo})
+    context.update({"form": form, "recurso": recurso, "tipo": tipo, "grupos_atuais_ids_str": grupos_atuais_ids_str})
     return render(request, "usuarios/editar_recurso.html", context)
 
 

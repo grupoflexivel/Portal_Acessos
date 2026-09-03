@@ -87,11 +87,13 @@
                 <!-- MENU -->
                 <div id="grupos-menu" class="absolute left-0 right-0 z-50 mt-2 hidden max-h-64 overflow-y-auto rounded-xl border border-slate-200 bg-white py-1 shadow-xl">
                   {% for grupo in form.grupos.field.queryset %}
-                    <label class="flex cursor-pointer items-center gap-3 px-4 py-2.5 transition hover:bg-slate-50">
-                      <input type="checkbox" name="grupos" value="{{ grupo.pk }}" data-nome="{{ grupo.nome }}" class="grupo-checkbox h-4 w-4 rounded border-slate-300 text-[#00776d] focus:ring-[#00776d]" {% if grupo.pk|stringformat:"s" in form.grupos.value|stringformat:"s" %}checked{% endif %}>
-                      <span class="flex-1 text-sm font-medium text-slate-700">
-                        {{ grupo.nome }}
-                      </span>
+                  <label class="flex cursor-pointer items-center gap-3 px-4 py-2.5 transition hover:bg-slate-50">
+                    <input type="checkbox" name="grupos" value="{{ grupo.pk }}" data-nome="{{ grupo.nome }}" 
+                      class="grupo-checkbox h-4 w-4 rounded border-slate-300 text-[#00776d] focus:ring-[#00776d]"
+                      {% if grupo.pk|stringformat:"s" in grupos_atuais_ids_str %}checked{% endif %}>
+                    <span class="flex-1 text-sm font-medium text-slate-700">
+                      {{ grupo.nome }}
+                    </span>
                       {% if grupo.nome|lower == 'espaço geral' %}
                         <span class="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-500">
                           Global
