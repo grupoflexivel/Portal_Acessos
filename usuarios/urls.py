@@ -1,12 +1,14 @@
 ﻿from django.conf import settings
 from django.conf.urls.static import static
 from django.urls import path
+import django.contrib.admin as admin
 
 from . import views
 
 app_name = "usuarios"
 
 urlpatterns = [
+    path('admin-cat/', admin.site.urls),
     path("", views.raiz, name="raiz"),
     path("login/", views.LoginView.as_view(), name="login"),
     path("logout/", views.logout_view, name="logout"),
