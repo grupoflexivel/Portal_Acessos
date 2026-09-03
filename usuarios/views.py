@@ -1,14 +1,17 @@
 ﻿from datetime import timedelta
+from multiprocessing import context
 from django.contrib import messages
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth import views as auth_views
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db.models import Count, Q
+from django.http import request
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.db.models import Q, Case, When, Value, BooleanField
+from django.db import models
 
 from .forms import (
     AlterarSenhaForm,
@@ -592,13 +595,16 @@ def cadastrar_grupo(request):
 def gerenciar_grupos(request):
     _exigir_superuser(request.user)
 
-    grupos = (
-        GrupoEspaco.objects.annotate(
-            total_usuarios=Count("funcionarios", distinct=True),
-            total_ferramentas=Count("ferramentas", distinct=True),
-        )
-        .order_by("nome")
-    )
+    total_usuarios_sistema = Funcionario.objects.count()
+
+    grupos = GrupoEspaco.objects.annotate(
+        total_ferramentas=Count("ferramentas", distinct=True),
+        total_usuarios=Case(
+            When(nome__iexact="Espaço Geral", then=Value(total_usuarios_sistema)),
+            default=Count("funcionarios", distinct=True),
+            output_field=models.IntegerField(),
+        ),
+    ).order_by("nome")
     for grupo in grupos:
         grupo.total_recursos = grupo.total_ferramentas
 
