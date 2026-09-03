@@ -656,7 +656,7 @@ def adicionar_membros_grupo(request, grupo_id):
         messages.warning(request, f"O grupo '{grupo.nome}' é de acesso universal automático e não requer gerenciamento manual de membros.")
         return redirect("usuarios:gerenciar_grupos")
 
-    usuarios_base = Funcionario.objects.select_related("centro_custo", "departamento").prefetch_related("grupos")
+    usuarios_base = Funcionario.objects.select_related("centro_custo", "departamento").prefetch_related("grupos").distinct()
 
     centro_custo_id = request.GET.get("centro_custo", "")
     if centro_custo_id and centro_custo_id.isdigit():
