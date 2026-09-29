@@ -5,22 +5,24 @@ from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth import views as auth_views
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.exceptions import PermissionDenied, ValidationError
-from django.db.models import Count, Q
+from django.db.models import Count, Exists, OuterRef, Q
 from django.http import request
 from django.shortcuts import get_object_or_404, redirect, render
-from django.urls import reverse_lazy
+from django.urls import reverse, reverse_lazy
 from django.utils import timezone
+from django.utils.http import urlencode
 from django.db.models import Q, Case, When, Value, BooleanField
 from django.db import models
 
 from .forms import (
     AlterarSenhaForm,
+    BannerInformativoForm,
     CadastroRecursoForm,
     FuncionarioCadastroForm,
     FuncionarioEdicaoForm,
     GrupoEspacoForm,
 )
-from .models import (CentroCusto, Departamento, Ferramenta, Funcionario, GrupoEspaco, UnidadeFabril,)
+from .models import (BannerInformativo, CentroCusto, Departamento, Ferramenta, Funcionario, GrupoEspaco, UnidadeFabril,)
 
 class LoginView(auth_views.LoginView):
     template_name = "usuarios/login.html"
@@ -209,9 +211,24 @@ def _contexto_sidebar(user):
     }
 
 
+def _desativar_banners_expirados():
+    """Marca como inativos (ativo=False) os banners cujo período de exibição já terminou."""
+    BannerInformativo.objects.filter(
+        ativo=True, data_fim__lt=timezone.now()
+    ).update(ativo=False)
+
+
 @login_required
 def home(request):
-    return render(request, "usuarios/home.html", _contexto_sidebar(request.user))
+    context = _contexto_sidebar(request.user)
+    _desativar_banners_expirados()
+    agora = timezone.now()
+    context["banners"] = BannerInformativo.objects.filter(
+        Q(data_inicio__isnull=True) | Q(data_inicio__lte=agora),
+        Q(data_fim__isnull=True) | Q(data_fim__gte=agora),
+        ativo=True,
+    )
+    return render(request, "usuarios/home.html", context)
 
 
 def raiz(request):
@@ -665,40 +682,42 @@ def adicionar_membros_grupo(request, grupo_id):
         messages.warning(request, f"O grupo '{grupo.nome}' é de acesso universal automático e não requer gerenciamento manual de membros.")
         return redirect("usuarios:gerenciar_grupos")
 
-    usuarios_base = Funcionario.objects.select_related("centro_custo", "departamento").prefetch_related("grupos").distinct()
-
     centro_custo_id = request.GET.get("centro_custo", "")
-    if centro_custo_id and centro_custo_id.isdigit():
-        usuarios_base = usuarios_base.filter(centro_custo_id=int(centro_custo_id))
-
     q = request.GET.get("q", "").strip()
-    if q:
-        usuarios_base = usuarios_base.filter(
-            Q(nome__icontains=q) |
-            Q(username__icontains=q) |
-            Q(email__icontains=q) |
-            Q(centro_custo__descricao__icontains=q) |
-            Q(centro_custo__codigo__icontains=q) |
-            Q(departamento__nome__icontains=q)
-        )
 
-    usuarios_base = usuarios_base.annotate(
-        ja_membro=Case(
-            When(grupos=grupo, then=Value(True)),
-            default=Value(False),
-            output_field=BooleanField()
-        )
-    ).order_by("-ja_membro", "nome", "username")
+    def _usuarios_base_qs():
+        qs = Funcionario.objects.select_related("centro_custo", "departamento")
+
+        if centro_custo_id and centro_custo_id.isdigit():
+            qs = qs.filter(centro_custo_id=int(centro_custo_id))
+
+        if q:
+            qs = qs.filter(
+                Q(nome__icontains=q) |
+                Q(username__icontains=q) |
+                Q(email__icontains=q) |
+                Q(centro_custo__descricao__icontains=q) |
+                Q(centro_custo__codigo__icontains=q) |
+                Q(departamento__nome__icontains=q)
+            ).distinct()
+
+        return qs.annotate(
+            ja_membro=Exists(
+                Funcionario.grupos.through.objects.filter(
+                    funcionario_id=OuterRef("pk"), grupoespaco_id=grupo.pk
+                )
+            )
+        ).order_by("-ja_membro", "nome", "username")
 
     if request.method == "POST":
-        usuarios_ids_marcados = [int(uid) for uid in request.POST.getlist("usuarios_ids")]
-        ids_visiveis = list(usuarios_base.values_list('id', flat=True))
-        
-        para_adicionar = [uid for uid in usuarios_ids_marcados if uid in ids_visiveis]
-        membros_atuais_visiveis = list(
-            Funcionario.objects.filter(id__in=ids_visiveis, grupos=grupo).values_list('id', flat=True)
+        usuarios_ids_marcados = {int(uid) for uid in request.POST.getlist("usuarios_ids")}
+        ids_visiveis = set(_usuarios_base_qs().values_list("id", flat=True))
+
+        para_adicionar = usuarios_ids_marcados & ids_visiveis
+        membros_atuais_visiveis = set(
+            Funcionario.objects.filter(id__in=ids_visiveis, grupos=grupo).values_list("id", flat=True)
         )
-        para_remover = [uid for uid in membros_atuais_visiveis if uid not in usuarios_ids_marcados]
+        para_remover = membros_atuais_visiveis - usuarios_ids_marcados
 
         if para_adicionar:
             grupo.funcionarios.add(*para_adicionar)
@@ -706,7 +725,18 @@ def adicionar_membros_grupo(request, grupo_id):
             grupo.funcionarios.remove(*para_remover)
 
         messages.success(request, f"Membros do grupo '{grupo.nome}' atualizados com sucesso!")
-        return redirect("usuarios:adicionar_membros_grupo", grupo_id=grupo.pk)
+
+        query_params = {}
+        if centro_custo_id:
+            query_params["centro_custo"] = centro_custo_id
+        if q:
+            query_params["q"] = q
+        url = reverse("usuarios:adicionar_membros_grupo", kwargs={"grupo_id": grupo.pk})
+        if query_params:
+            url = f"{url}?{urlencode(query_params)}"
+        return redirect(url)
+
+    usuarios_base = _usuarios_base_qs()
 
     context = _contexto_sidebar(request.user)
     context.update({
@@ -717,3 +747,75 @@ def adicionar_membros_grupo(request, grupo_id):
         "termo_busca": q,
     })
     return render(request, "usuarios/adicionar_membros.html", context)
+
+
+@login_required
+def gerenciar_banners(request):
+
+    _desativar_banners_expirados()
+    banners = BannerInformativo.objects.all().order_by("ordem")
+    context = _contexto_sidebar(request.user)
+    context["banners"] = banners
+    return render(request, "usuarios/gerenciar_banners.html", context)
+
+@login_required
+def cadastrar_banner_admin(request, banner_id=None):
+  banner = None
+  if banner_id:
+    banner = get_object_or_404(BannerInformativo, pk=banner_id)
+
+  if request.method == 'POST':
+    form = BannerInformativoForm(request.POST, request.FILES, instance=banner)
+    if form.is_valid():
+      form.save()
+      acao = 'atualizado' if banner_id else 'cadastrado'
+      messages.success(request, f'Banner {acao} com sucesso!')
+      return redirect('usuarios:gerenciar_banners')
+  else:
+    if banner:
+      form = BannerInformativoForm(instance=banner)
+    else:
+      # Calcula a próxima ordem se for um novo cadastro
+      from django.db.models import Max
+
+      ultima_ordem = BannerInformativo.objects.aggregate(Max('ordem'))[
+          'ordem__max'
+      ]
+      proxima_ordem = (ultima_ordem or 0) + 1
+      form = BannerInformativoForm(initial={'ordem': proxima_ordem})
+
+  context = _contexto_sidebar(request.user)
+  context['form'] = form
+  context['banner'] = banner
+  return render(request, 'usuarios/cadastrar_banner.html', context)
+
+def excluir_banner_admin(request, pk):
+    banner = get_object_or_404(BannerInformativo, pk=pk)
+    if request.method == 'POST':
+        banner.delete()
+        messages.success(request, "Banner excluído com sucesso!")
+        return redirect('usuarios:gerenciar_banners')
+    return redirect('usuarios:gerenciar_banners')
+
+@login_required
+def detalhe_grupo(request, grupo_id=None):
+    context = _contexto_sidebar(request.user)
+    
+    if grupo_id is not None:
+        grupo = get_object_or_404(GrupoEspaco, pk=grupo_id)
+        
+        # Atribui a lista de ferramentas já avaliada (.all()) para o template iterar sem erros
+        if hasattr(grupo, 'ferramentas'):
+            grupo.itens = grupo.ferramentas.all()
+        elif hasattr(grupo, 'itens'):
+            grupo.itens = grupo.itens.all()
+        else:
+            grupo.itens = []
+            
+        context["grupo"] = grupo
+        context["espaco_completo"] = False
+    else:
+        context["espaco_completo"] = True
+        context["grupos"] = context.get("ferramentas") or context.get("grupos_recursos")
+         
+    return render(request, "usuarios/detalhe_grupo.html", context)

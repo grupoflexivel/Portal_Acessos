@@ -14,7 +14,7 @@
 
     {% include "usuarios/includes/sidebar.html" %}
 
-    <main id="page-content" class="min-w-0 flex-1 overflow-x-hidden p-6 transition-all duration-300 md:ml-72 md:p-10">
+    <main id="page-content" class="min-w-0 flex-1 overflow-x-hidden p-6 transition-all duration-300 ml-72 md:p-10">
       <div class="mx-auto w-full max-w-4xl">
 
         <!-- CABEÇALHO -->
@@ -441,10 +441,10 @@
         toggle.setAttribute('aria-label', collapsed ? 'Expandir menu' : 'Recolher menu');
         toggle.setAttribute('title', collapsed ? 'Expandir menu' : 'Recolher menu');
 
-        sidebar.classList.toggle('md:w-72', !collapsed);
-        sidebar.classList.toggle('md:w-20', collapsed);
-        pageContent.classList.toggle('md:ml-72', !collapsed);
-        pageContent.classList.toggle('md:ml-20', collapsed);
+        sidebar.classList.toggle('w-72', !collapsed);
+        sidebar.classList.toggle('w-20', collapsed);
+        pageContent.classList.toggle('ml-72', !collapsed);
+        pageContent.classList.toggle('ml-20', collapsed);
 
         labels.forEach(label => {
           label.classList.toggle('hidden', collapsed);

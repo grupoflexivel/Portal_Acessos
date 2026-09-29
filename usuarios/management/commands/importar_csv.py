@@ -11,7 +11,7 @@ from django.db import IntegrityError, transaction
 from usuarios.models import CentroCusto, Departamento, Funcionario, UnidadeFabril
 
 
-COLUNAS_OBRIGATORIAS = {"nome", "centro_custo_codigo", "centro_custo_descricao", "unidade_fabril_nome", "departamento",}
+COLUNAS_OBRIGATORIAS = {"nome", "unidade_fabril_nome", "departamento",}
 
 def texto_limpo(valor):
     return (valor or "").strip()
@@ -134,14 +134,16 @@ class Command(BaseCommand):
             if departamento_criado:
                 contadores["departamentos"] += 1
 
-            centro, centro_criado = CentroCusto.objects.get_or_create(
-                codigo=codigo, defaults={"descricao": descricao}
-            )
-            if centro_criado:
-                contadores["centros"] += 1
-            elif centro.descricao != descricao:
-                centro.descricao = descricao
-                centro.save(update_fields=["descricao"])
+            centro = None
+            if codigo:
+                centro, centro_criado = CentroCusto.objects.get_or_create(
+                    codigo=codigo, defaults={"descricao": descricao}
+                )
+                if centro_criado:
+                    contadores["centros"] += 1
+                elif descricao and centro.descricao != descricao:
+                    centro.descricao = descricao
+                    centro.save(update_fields=["descricao"])
 
             # Localiza o funcionário priorizando o e-mail (se houver), ou pelo nome exato
             funcionario = None
@@ -162,7 +164,7 @@ class Command(BaseCommand):
                     ativo=True,
                     deve_trocar_senha=True,
                 )
-                funcionario.set_password("Flex@123")
+                funcionario.set_password("MudarSenha123")
                 funcionario.save()
                 contadores["criados"] += 1
             else:

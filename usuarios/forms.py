@@ -1,8 +1,9 @@
 ﻿import unicodedata
 from django import forms
 from django.contrib.auth.forms import PasswordChangeForm
+from django.utils import timezone
 
-from .models import (Funcionario, GrupoEspaco, ICONE_RECURSO_CHOICES,)
+from .models import (BannerInformativo, Funcionario, GrupoEspaco, ICONE_RECURSO_CHOICES,)
 
 CAMPO_PADRAO = (
     "w-full rounded-xl border border-slate-300 bg-white px-4 py-3 "
@@ -401,3 +402,55 @@ class GrupoEspacoForm(forms.ModelForm):
             if existente.exists():
                 raise forms.ValidationError("Já existe o grupo reservado Todos.")
         return nome
+
+class BannerInformativoForm(forms.ModelForm):
+    class Meta:
+        model = BannerInformativo
+        fields = ["imagem", "link_url", "ativo", "ordem", "data_inicio", "data_fim"]
+        widgets = {
+            "link_url": forms.URLInput(
+                attrs={
+                    "class": CAMPO_PADRAO,
+                    "placeholder": "https://exemplo.com (Opcional)",
+                }
+            ),
+            "ativo": forms.CheckboxInput(attrs={"class": CHECKBOX}),
+            "ordem": forms.NumberInput(attrs={"class": CAMPO_PADRAO}),
+            "data_inicio": forms.DateTimeInput(
+                attrs={"class": CAMPO_PADRAO, "type": "datetime-local"},
+                format="%Y-%m-%dT%H:%M",
+            ),
+            "data_fim": forms.DateTimeInput(
+                attrs={"class": CAMPO_PADRAO, "type": "datetime-local"},
+                format="%Y-%m-%dT%H:%M",
+            ),
+        }
+
+    def clean(self):
+        cleaned_data = super().clean()
+        data_inicio = cleaned_data.get("data_inicio")
+        data_fim = cleaned_data.get("data_fim")
+        if data_inicio and data_fim and data_inicio > data_fim:
+            self.add_error(
+                "data_fim",
+                "A data de término deve ser posterior à data de início.",
+            )
+        elif data_fim and data_fim < timezone.now():
+            # Período já encerrado: o banner não deve ser salvo como ativo.
+            cleaned_data["ativo"] = False
+        return cleaned_data
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for campo in ("data_inicio", "data_fim"):
+            self.fields[campo].input_formats = ["%Y-%m-%dT%H:%M"]
+
+        # Estilização opcional do input de arquivo de imagem se não estiver coberto pelos widgets acima
+        if "imagem" in self.fields:
+            self.fields["imagem"].widget.attrs.update({
+                "class": (
+                    "w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 "
+                    "file:rounded-xl file:border-0 file:text-sm file:font-semibold "
+                    "file:bg-emerald-50 file:text-[#00776d] hover:file:bg-emerald-100 cursor-pointer"
+                )
+            })

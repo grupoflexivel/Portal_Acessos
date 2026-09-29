@@ -1,0 +1,128 @@
+{% load static %}
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>flexxHub | Gerenciar Banners</title>
+  <link rel="icon" type="image/png" href="{% static 'usuarios/images/Grupo Flexível_icon_color_X.png' %}">
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-slate-100 text-slate-900">
+  <div class="min-h-screen md:flex">
+    
+    {% include "usuarios/includes/sidebar.html" %}
+
+    <main id="page-content" class="flex-1 p-6 transition-all duration-300 ml-72 md:p-10">
+      <div class="mx-auto max-w-6xl">
+        
+        <header class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <a href="{% url 'usuarios:home' %}" class="text-sm font-medium text-[#00776d] hover:underline">&larr; Voltar para o Início</a>
+            <h1 class="mt-2 text-2xl font-bold tracking-tight text-slate-900">Banners Informativos</h1>
+            <p class="mt-1 text-sm text-slate-600">Gerencie os comunicados e destaques visuais exibidos aos colaboradores.</p>
+          </div>
+          <a href="{% url 'usuarios:cadastrar_banner' %}" class="inline-flex items-center justify-center rounded-xl bg-[#00776d] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#005f56]">
+            + Novo Banner
+          </a>
+        </header>
+
+        {% include "usuarios/includes/toast_messages.html" %}
+
+        <section class="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="border-b border-slate-200 bg-slate-50/75 text-xs font-semibold uppercase tracking-wider text-slate-600">
+                  <th class="px-6 py-4">Imagem</th>
+                  <th class="px-6 py-4 text-center">Ordem</th>
+                  <th class="px-6 py-4 text-center">Período de Exibição</th>
+                  <th class="px-6 py-4 text-center">Status</th>
+                  <th class="px-6 py-4 text-right">Ações</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-200 text-sm">
+                {% for banner in banners %}
+                <tr class="transition hover:bg-slate-50/50">
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    {% if banner.imagem %}
+                      <img src="{{ banner.imagem.url }}" alt="Banner {{ banner.ordem }}" class="h-10 w-16 rounded-lg object-cover border border-slate-200 shadow-sm">
+                    {% else %}
+                      <div class="flex h-10 w-16 items-center justify-center rounded-lg bg-slate-100 text-xs text-slate-400 border border-slate-200">
+                        Sem foto
+                      </div>
+                    {% endif %}
+                  </td>
+                  <td class="px-6 py-4 text-center font-medium text-slate-700 whitespace-nowrap">
+                    {{ banner.ordem }}
+                  </td>
+                  <td class="px-6 py-4 text-center whitespace-nowrap text-xs text-slate-500">
+                    {% if banner.data_inicio or banner.data_fim %}
+                      {{ banner.data_inicio|date:"d/m/Y H:i"|default:"Sem início" }}
+                      &rarr;
+                      {{ banner.data_fim|date:"d/m/Y H:i"|default:"Sem fim" }}
+                    {% else %}
+                      Sempre visível
+                    {% endif %}
+                  </td>
+                  <td class="px-6 py-4 text-center whitespace-nowrap">
+                    {% if banner.ativo %}
+                      <span class="inline-flex items-center rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-medium text-emerald-800">
+                        Ativo
+                      </span>
+                    {% else %}
+                      <span class="inline-flex items-center rounded-full bg-rose-100 px-2.5 py-0.5 text-xs font-medium text-rose-800">
+                        Inativo
+                      </span>
+                    {% endif %}
+                  </td>
+                  <td class="px-6 py-4 text-right whitespace-nowrap space-x-2">
+                    <a href="{% url 'usuarios:editar_banner' banner.pk %}" class="inline-flex items-center rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-700 shadow-sm transition hover:bg-slate-50">
+                      Editar
+                    </a>
+                    <form action="{% url 'usuarios:excluir_banner' banner.pk %}" method="POST" class="inline" onsubmit="return confirm('Tem certeza que deseja excluir este banner?');">
+                      {% csrf_token %}
+                      <button type="submit" class="inline-flex items-center rounded-lg border border-rose-300 bg-white px-3 py-1.5 text-xs font-medium text-rose-600 shadow-sm transition hover:bg-rose-50">
+                        Excluir
+                      </button>
+                    </form>
+                  </td>
+                </tr>
+                {% empty %}
+                <tr>
+                  <td colspan="5" class="px-6 py-12 text-center text-slate-500">
+                    <p class="text-sm font-medium">Nenhum banner cadastrado até o momento.</p>
+                    <p class="mt-1 text-xs text-slate-400">Clique em "+ Novo Banner" para começar.</p>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // SIDEBAR TOGGLE
+    const sidebar = document.getElementById('sidebar');
+    const pageContent = document.getElementById('page-content');
+    const toggle = document.getElementById('sidebar-toggle');
+    const labels = document.querySelectorAll('.sidebar-label');
+
+    if (toggle && sidebar && pageContent) {
+      toggle.addEventListener('click', () => {
+        const collapsed = toggle.getAttribute('aria-expanded') === 'true';
+        toggle.setAttribute('aria-expanded', String(!collapsed));
+        sidebar.classList.toggle('w-72', !collapsed);
+        sidebar.classList.toggle('w-20', collapsed);
+        pageContent.classList.toggle('ml-72', !collapsed);
+        pageContent.classList.toggle('ml-20', collapsed);
+        labels.forEach(label => label.classList.toggle('hidden', collapsed));
+      });
+    }
+  </script>
+</body>
+</html>

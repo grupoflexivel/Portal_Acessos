@@ -11,7 +11,7 @@
 <body class="bg-slate-50 text-slate-900">
   {% include "usuarios/includes/sidebar.html" %}
 
-  <div id="page-content" class="min-h-screen transition-all duration-300 md:ml-72">
+  <div id="page-content" class="min-h-screen transition-all duration-300 ml-72">
     <main class="p-6 lg:p-10">
       <div class="mx-auto max-w-5xl">
         
@@ -111,6 +111,24 @@
   </div>
 
   <script>
+    // SIDEBAR TOGGLE
+    const sidebar = document.getElementById('sidebar');
+    const pageContent = document.getElementById('page-content');
+    const toggle = document.getElementById('sidebar-toggle');
+    const labels = document.querySelectorAll('.sidebar-label');
+
+    if (toggle && sidebar && pageContent) {
+      toggle.addEventListener('click', () => {
+        const collapsed = toggle.getAttribute('aria-expanded') === 'true';
+        toggle.setAttribute('aria-expanded', String(!collapsed));
+        sidebar.classList.toggle('w-72', !collapsed);
+        sidebar.classList.toggle('w-20', collapsed);
+        pageContent.classList.toggle('ml-72', !collapsed);
+        pageContent.classList.toggle('ml-20', collapsed);
+        labels.forEach(label => label.classList.toggle('hidden', collapsed));
+      });
+    }
+
     const selectAll = document.getElementById('select-all');
     const checkboxes = document.querySelectorAll('.user-checkbox');
     if (selectAll) {

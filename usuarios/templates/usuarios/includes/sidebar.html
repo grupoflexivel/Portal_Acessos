@@ -1,6 +1,6 @@
 {% load static %}
 
-<aside id="sidebar" class="flex h-screen w-full flex-col bg-[#004b46] text-white transition-all duration-300 md:fixed md:inset-y-0 md:w-72 overflow-hidden" aria-label="Menu principal">
+<aside id="sidebar" class="fixed inset-y-0 left-0 z-40 flex h-screen w-72 flex-col bg-[#004b46] text-white transition-all duration-300 overflow-hidden" aria-label="Menu principal">
 
   <!-- TOPO FIXO: Logotipo e Botão de Recolher -->
   <div class="flex items-center justify-between border-b border-emerald-900/35 px-6 py-6 shrink-0">
@@ -104,7 +104,7 @@
     {% endif %}
 
     <!-- ACESSOS -->
-    <details class="group">
+    <details id="menu-acessos" class="group">
       <summary class="flex cursor-pointer list-none items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold text-emerald-50 transition hover:bg-white/15 hover:text-white">
         <svg class="h-4 w-4 shrink-0 transition group-open:rotate-90" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
           <path d="m9 18 6-6-6-6"/>
@@ -113,22 +113,37 @@
         <span class="sidebar-label">Acessos</span>
       </summary>
 
-      <div class="sidebar-label ml-3 mt-1 space-y-1 border-l border-emerald-200/25 pl-3">
+      <div class="sidebar-label ml-3 mt-1 space-y-1 border-l border-emerald-200/25 pl-3 py-1">
+        
+        <!-- BOTÃO ABRIR ESPAÇO COMPLETO (Fixo no acesso, fora do loop) -->
+        <a href="{% url 'usuarios:espaco_completo' %}" class="flex items-center gap-1.5 rounded-lg bg-emerald-500/25 px-2.5 py-1.5 text-xs font-semibold text-emerald-100 transition hover:bg-emerald-500/40 hover:text-white mb-2">
+          <svg class="h-3.5 w-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
+          </svg>
+          Abrir espaço completo
+        </a>
+
         <!-- GRUPOS / ESPAÇOS DISPONÍVEIS PARA O USUÁRIO -->
         {% for grupo in ferramentas %}
-
-          <details class="group">
-            <summary class="flex cursor-pointer list-none items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-emerald-50 transition hover:bg-white/15 hover:text-white">
-              <svg class="h-4 w-4 shrink-0 transition group-open:rotate-90" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                <path d="m9 18 6-6-6-6"/>
-              </svg>
-              <span class="sidebar-label min-w-0 truncate" title="{{ grupo.nome }}">
-                {{ grupo.nome }}
-              </span>
+          <details class="group/sub menu-grupo-detalhe" data-grupo-id="{{ grupo.id }}">
+            <summary class="flex cursor-pointer list-none items-center justify-between rounded-xl px-3 py-2.5 text-sm font-medium text-emerald-50 transition hover:bg-white/15 hover:text-white">
+              <div class="flex items-center gap-2 min-w-0">
+                <svg class="h-4 w-4 shrink-0 transition group-open/sub:rotate-90 text-emerald-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <path d="m9 18 6-6-6-6"/>
+                </svg>
+                <span class="truncate min-w-0" title="{{ grupo.nome }}">
+                  {{ grupo.nome }}
+                </span>
+              </div>
             </summary>
 
-            <!-- RECURSOS DO GRUPO -->
-            <div class="sidebar-label ml-7 mt-1 space-y-1 border-l border-emerald-200/25 pl-3">
+            <div class="ml-4 mt-1 space-y-2 border-l border-emerald-200/25 pl-3 py-1">
+              
+              <!-- BOTÃO ABRIR ESPAÇO INDIVIDUAL (Fica dentro do loop de cada grupo) -->
+              <a href="{% url 'usuarios:detalhe_grupo' grupo.id %}" class="inline-flex items-center gap-1.5 rounded-lg bg-emerald-500/20 px-2.5 py-1 text-[11px] font-semibold text-emerald-200 transition hover:bg-emerald-500/40 hover:text-white mb-1">
+                <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                abrir espaço
+              </a>
 
               {% for ferramenta in grupo.itens %}
                 <a href="{% if ferramenta.arquivo %}{{ ferramenta.arquivo.url }}{% else %}{{ ferramenta.url }}{% endif %}" target="_blank" rel="noopener noreferrer" class="block truncate rounded-lg px-3 py-2 text-xs text-emerald-100/85 transition hover:bg-white/15 hover:text-white" title="{{ ferramenta.nome }}">
@@ -210,3 +225,28 @@
   </div>
 
 </aside>
+
+<!-- Script para manter o menu e o espaço aberto automaticamente ao carregar a página -->
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const currentPath = window.location.pathname;
+
+    // Se estiver em alguma página de detalhe de grupo (ex: /usuarios/grupo/5/)
+    if (currentPath.includes("/grupo/")) {
+      // Abre o menu principal "Acessos"
+      const menuAcessos = document.getElementById("menu-acessos");
+      if (menuAcessos) {
+        menuAcessos.open = true;
+      }
+
+      // Procura qual sub-espaço corresponde à URL atual e abre ele também
+      const subGrupos = document.querySelectorAll(".menu-grupo-detalhe");
+      subGrupos.forEach(sub => {
+        const linkAbrir = sub.querySelector("a[href*='" + currentPath + "']");
+        if (linkAbrir) {
+          sub.open = true;
+        }
+      });
+    }
+  });
+</script>

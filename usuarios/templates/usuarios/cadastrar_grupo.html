@@ -11,7 +11,7 @@
   <body class="bg-slate-50 text-slate-900">
     {% include "usuarios/includes/sidebar.html" %}
     
-    <div id="page-content" class="min-h-screen transition-all duration-300 md:ml-72">
+    <div id="page-content" class="min-h-screen transition-all duration-300 ml-72">
       <main class="p-6 lg:p-10">
         <div class="mx-auto max-w-3xl">
           <div class="mb-6">
@@ -66,10 +66,10 @@
         toggle.addEventListener('click', () => {
           const e = toggle.getAttribute('aria-expanded') === 'true';
           toggle.setAttribute('aria-expanded', String(!e));
-          sidebar.classList.toggle('md:w-72', !e);
-          sidebar.classList.toggle('md:w-20', e);
-          pageContent.classList.toggle('md:ml-72', !e);
-          pageContent.classList.toggle('md:ml-20', e);
+          sidebar.classList.toggle('w-72', !e);
+          sidebar.classList.toggle('w-20', e);
+          pageContent.classList.toggle('ml-72', !e);
+          pageContent.classList.toggle('ml-20', e);
           labels.forEach(l => l.classList.toggle('hidden', e));
         });
       }

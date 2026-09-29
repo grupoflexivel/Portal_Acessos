@@ -32,6 +32,14 @@ urlpatterns = [
     path("grupos/<int:grupo_id>/editar/", views.editar_grupo, name="editar_grupo"),
     path("grupos/<int:grupo_id>/excluir/", views.excluir_grupo, name="excluir_grupo"),
     path("grupos/<int:grupo_id>/membros/adicionar/", views.adicionar_membros_grupo, name="adicionar_membros_grupo"),
+
+    path("banners/cadastrar/", views.cadastrar_banner_admin, name="cadastrar_banner"),
+    path("banners/editar/<int:banner_id>/", views.cadastrar_banner_admin, name="editar_banner"),
+    path("banners/gerenciar/", views.gerenciar_banners, name="gerenciar_banners"),
+    path('banners/excluir/<int:pk>/', views.excluir_banner_admin, name='excluir_banner'),
+
+    path('grupo/', views.detalhe_grupo, name='espaco_completo'),
+    path('grupo/<int:grupo_id>/', views.detalhe_grupo, name='detalhe_grupo'),
 ]
 
 if settings.DEBUG:

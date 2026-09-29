@@ -1,0 +1,288 @@
+{% load static %}
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>flexxHub | {% if banner %}Editar Banner{% else %}Cadastrar Banner{% endif %}</title>
+  <link rel="icon" type="image/png" href="{% static 'usuarios/images/Grupo Flexível_icon_color_X.png' %}">
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-slate-100 text-slate-900">
+  <div class="min-h-screen md:flex">
+    
+    {% include "usuarios/includes/sidebar.html" %}
+
+    <main id="page-content" class="flex-1 p-6 transition-all duration-300 ml-72 md:p-10">
+      <div class="mx-auto max-w-xl">
+        
+        <header class="mb-6">
+          <a href="{% url 'usuarios:gerenciar_banners' %}" class="text-sm font-medium text-[#00776d] hover:underline">&larr; Voltar para o Gerenciamento</a>
+          <h1 class="mt-2 text-2xl font-bold tracking-tight text-slate-900">
+            {% if banner %}Editar Banner Informativo{% else %}Cadastrar Novo Banner Informativo{% endif %}
+          </h1>
+          <p class="mt-1 text-sm text-slate-600">Preencha os campos abaixo para configurar o destaque exibido no sistema.</p>
+        </header>
+
+        {% include "usuarios/includes/toast_messages.html" %}
+
+        <section class="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
+          <form method="post" enctype="multipart/form-data" class="space-y-5">
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+              <div class="rounded-xl bg-rose-50 border border-rose-200 p-4 text-sm font-medium text-rose-700">
+                {{ form.non_field_errors }}
+              </div>
+            {% endif %}
+
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1.5">
+                {{ form.titulo.label }}
+              </label>
+              {{ form.titulo }}
+              {% for error in form.titulo.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ error }}</p>
+              {% endfor %}
+            </div>
+
+            <div class="space-y-3 border-t border-slate-200 pt-6">
+              <div class="rounded-2xl border border-emerald-200 bg-emerald-50 p-5">
+                <h3 class="text-sm font-semibold text-[#00776d]">Mídia</h3>
+                <p class="mt-1 text-xs text-slate-600">
+                  Adicione uma imagem de fundo ilustrativa.
+                </p>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1.5">
+                  {{ form.imagem.label }}
+                </label>
+
+                <!-- IMAGEM ATUAL CADASTRADA (Com botão X para remoção) -->
+                {% if banner and banner.imagem %}
+                  <div id="bloco-imagem-atual" class="mb-3 flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 p-3">
+                    <div class="flex items-center gap-3">
+                      <img src="{{ banner.imagem.url }}" alt="{{ banner.titulo }}" class="h-12 w-20 rounded-lg object-cover border border-slate-300">
+                      <span class="text-xs text-slate-600 font-medium">Imagem atual cadastrada</span>
+                    </div>
+                    <!-- Botão X para apagar a imagem atual -->
+                    <button type="button" onclick="removerImagemAtual()" class="rounded-lg bg-slate-200 p-2 text-slate-700 hover:bg-rose-100 hover:text-rose-600 transition" title="Remover imagem atual">
+                      <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                  </div>
+                  <!-- Input oculto padrão do Django para limpar o FileField (geralmente name="imagem-clear") -->
+                  <input type="checkbox" name="imagem-clear" id="imagem-clear_id" class="hidden">
+                {% endif %}
+
+                <!-- INPUT DE SELEÇÃO DE NOVA IMAGEM -->
+                <div id="wrapper-input-imagem" class="space-y-2" {% if banner and banner.imagem %}style="display: none;"{% endif %}>
+                  {{ form.imagem }}
+                </div>
+
+                <!-- PREVIEW DE NOVA IMAGEM SELECIONADA -->
+                <div id="preview-nova-imagem" style="display: none;" class="items-center justify-between rounded-xl border border-emerald-200 bg-emerald-50 p-3 mt-2">
+                  <div class="flex items-center gap-3">
+                    <img id="img-preview-tag" src="" alt="Nova imagem" class="h-12 w-20 rounded-lg object-cover bg-white border border-emerald-300 p-0.5">
+                    <span class="text-xs text-[#00776d] font-medium">Nova imagem selecionada</span>
+                  </div>
+                  <button type="button" onclick="limparNovaImagem()" class="rounded-lg bg-emerald-100 p-2 text-[#00776d] hover:bg-emerald-200 transition" title="Remover seleção">
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                  </button>
+                </div>
+
+                <p class="mt-1 text-xs text-slate-500">Opcional. Formatos suportados: PNG, JPG ou WebP.</p>
+                {% for error in form.imagem.errors %}
+                  <p class="mt-1 text-sm text-red-600">{{ error }}</p>
+                {% endfor %}
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1.5">
+                {{ form.link_url.label }}
+              </label>
+              {{ form.link_url }}
+              {% for error in form.link_url.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ error }}</p>
+              {% endfor %}
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1.5">
+                {{ form.link_texto.label }}
+              </label>
+              {{ form.link_texto }}
+              {% for error in form.link_texto.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ error }}</p>
+              {% endfor %}
+            </div>
+
+            <div class="space-y-4 border-t border-slate-200 pt-6">
+              <div class="flex items-center gap-3">
+                {{ form.ativo }}
+                <label class="text-sm font-medium text-slate-700 cursor-pointer">
+                  Banner ativo no sistema
+                </label>
+              </div>
+              {% for error in form.ativo.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ error }}</p>
+              {% endfor %}
+
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1.5">
+                  {{ form.ordem.label }}
+                </label>
+                {{ form.ordem }}
+                <p class="mt-1 text-xs text-slate-500">Define a sequência de aparição (números menores aparecem primeiro).</p>
+                {% for error in form.ordem.errors %}
+                  <p class="mt-1 text-sm text-red-600">{{ error }}</p>
+                {% endfor %}
+              </div>
+            </div>
+
+            <div class="space-y-4 border-t border-slate-200 pt-6">
+              <div class="rounded-2xl border border-emerald-200 bg-emerald-50 p-5">
+                <h3 class="text-sm font-semibold text-[#00776d]">Agendamento de Exibição</h3>
+                <p class="mt-1 text-xs text-slate-600">
+                  Opcional. Se preenchido, o banner é exibido automaticamente apenas dentro do período informado.
+                </p>
+              </div>
+
+              <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-1.5">
+                    {{ form.data_inicio.label }}
+                  </label>
+                  {{ form.data_inicio }}
+                  {% for error in form.data_inicio.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ error }}</p>
+                  {% endfor %}
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-1.5">
+                    {{ form.data_fim.label }}
+                  </label>
+                  {{ form.data_fim }}
+                  {% for error in form.data_fim.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ error }}</p>
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-end gap-3 pt-4">
+              <a href="{% url 'usuarios:gerenciar_banners' %}" class="rounded-xl border border-slate-300 px-5 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50">
+                Cancelar
+              </a>
+              <button type="submit" class="rounded-xl bg-[#00776d] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#005f56]">
+                Salvar Banner
+              </button>
+            </div>
+          </form>
+        </section>
+
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // SIDEBAR TOGGLE
+    const sidebar = document.getElementById('sidebar');
+    const pageContent = document.getElementById('page-content');
+    const toggle = document.getElementById('sidebar-toggle');
+    const labels = document.querySelectorAll('.sidebar-label');
+
+    if (toggle && sidebar && pageContent) {
+      toggle.addEventListener('click', () => {
+        const collapsed = toggle.getAttribute('aria-expanded') === 'true';
+        toggle.setAttribute('aria-expanded', String(!collapsed));
+        sidebar.classList.toggle('w-72', !collapsed);
+        sidebar.classList.toggle('w-20', collapsed);
+        pageContent.classList.toggle('ml-72', !collapsed);
+        pageContent.classList.toggle('ml-20', collapsed);
+        labels.forEach(label => label.classList.toggle('hidden', collapsed));
+      });
+    }
+
+    // ESTILIZAÇÃO AUTOMÁTICA DE INPUTS DO DJANGO
+    document.addEventListener('DOMContentLoaded', () => {
+      const inputs = document.querySelectorAll('input[type="text"], input[type="url"], input[type="number"], input[type="datetime-local"], textarea, select');
+      inputs.forEach(el => {
+        if (!el.classList.contains('w-full')) {
+          el.className = 'w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-800 shadow-sm focus:border-[#00776d] focus:outline-none focus:ring-1 focus:ring-[#00776d]';
+        }
+      });
+
+      const checkboxes = document.querySelectorAll('input[type="checkbox"]:not(#imagem-clear_id)');
+      checkboxes.forEach(chk => {
+        if (!chk.classList.contains('accent-[#00776d]')) {
+          chk.className = 'h-4 w-4 rounded border-slate-300 text-[#00776d] focus:ring-[#00776d]';
+        }
+      });
+    });
+
+    // PRÉ-VISUALIZAÇÃO E CONTROLE DA IMAGEM
+    window.addEventListener('load', () => {
+      const inputImagem = document.getElementById('id_imagem');
+      const previewDiv = document.getElementById('preview-nova-imagem');
+      const imgPreview = document.getElementById('img-preview-tag');
+      const wrapperInput = document.getElementById('wrapper-input-imagem');
+      const inputClear = document.getElementById('imagem-clear_id'); // Referência ao checkbox clear
+
+      if (inputImagem) {
+        inputImagem.className = 'w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-[#00776d]/10 file:text-[#00776d] hover:file:bg-[#00776d]/20 cursor-pointer';
+
+        inputImagem.addEventListener('change', function(e) {
+          const file = e.target.files[0];
+          if (file) {
+            // CORREÇÃO: Se escolheu um arquivo novo, desmarca o clear para evitar conflito no Django
+            if (inputClear) inputClear.checked = false;
+
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+              if (imgPreview) imgPreview.src = evt.target.result;
+              if (previewDiv) previewDiv.style.display = 'flex';
+              if (wrapperInput) wrapperInput.style.display = 'none';
+            }
+            reader.readAsDataURL(file);
+          }
+        });
+      }
+    });
+
+    // Função para remover a imagem atual já salva no banco
+    function removerImagemAtual() {
+      const blocoAtual = document.getElementById('bloco-imagem-atual');
+      const inputClear = document.getElementById('imagem-clear_id');
+      const wrapperInput = document.getElementById('wrapper-input-imagem');
+
+      if (blocoAtual) blocoAtual.style.display = 'none'; // Esconde a imagem atual
+      if (inputClear) inputClear.checked = true;          // Marca o checkbox de limpar do Django
+      if (wrapperInput) wrapperInput.style.display = 'block'; // Mostra o input para enviar uma nova se quiser
+    }
+
+    // Função para cancelar a seleção de uma nova imagem recém-colocada
+    function limparNovaImagem() {
+      const inputImagem = document.getElementById('id_imagem');
+      const previewDiv = document.getElementById('preview-nova-imagem');
+      const wrapperInput = document.getElementById('wrapper-input-imagem');
+      const blocoAtual = document.getElementById('bloco-imagem-atual');
+      const inputClear = document.getElementById('imagem-clear_id');
+
+      if (inputImagem) inputImagem.value = '';
+      if (previewDiv) previewDiv.style.display = 'none';
+      
+      // Se já existia uma imagem original e o usuário apenas cancelou a nova seleção, volta a mostrar a original
+      if (blocoAtual) {
+        blocoAtual.style.display = 'flex';
+        // Se a imagem original voltou a aparecer, desmarca o clear caso estivesse marcado
+        if (inputClear) inputClear.checked = false;
+      } else {
+        if (wrapperInput) wrapperInput.style.display = 'block';
+      }
+    }
+  </script>
+</body>
+</html>

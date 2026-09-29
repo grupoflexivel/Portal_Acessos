@@ -14,7 +14,7 @@
     {% include "usuarios/includes/sidebar.html" %}
 
     <!-- CONTEÚDO PRINCIPAL -->
-    <main id="page-content" class="flex-1 p-6 transition-all duration-300 md:ml-72 md:p-10">
+    <main id="page-content" class="flex-1 p-6 transition-all duration-300 ml-72 md:p-10">
       <div class="mx-auto max-w-6xl">
         
         <header class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -132,10 +132,10 @@
       toggle.addEventListener('click', () => {
         const collapsed = toggle.getAttribute('aria-expanded') === 'true';
         toggle.setAttribute('aria-expanded', String(!collapsed));
-        sidebar.classList.toggle('md:w-72', !collapsed);
-        sidebar.classList.toggle('md:w-20', collapsed);
-        pageContent.classList.toggle('md:ml-72', !collapsed);
-        pageContent.classList.toggle('md:ml-20', collapsed);
+        sidebar.classList.toggle('w-72', !collapsed);
+        sidebar.classList.toggle('w-20', collapsed);
+        pageContent.classList.toggle('ml-72', !collapsed);
+        pageContent.classList.toggle('ml-20', collapsed);
         labels.forEach((label) => label.classList.toggle('hidden', collapsed));
       });
     }

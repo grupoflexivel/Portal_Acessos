@@ -184,3 +184,29 @@ class Funcionario(AbstractUser):
             self.bloqueado_ate = None
             self.save(update_fields=["bloqueado_ate"])
         return False
+
+
+
+class BannerInformativo(models.Model):
+    imagem = models.ImageField(upload_to="banners/", verbose_name="Imagem de Fundo")
+    
+    # Este é o único campo necessário para o redirecionamento da imagem
+    link_url = models.URLField(max_length=500, blank=True, null=True, verbose_name="URL de Redirecionamento ao Clicar")
+    
+    ativo = models.BooleanField(default=True, verbose_name="Ativo")
+    ordem = models.IntegerField(default=0, verbose_name="Ordem de Exibição")
+
+    data_inicio = models.DateTimeField(
+        blank=True, null=True, verbose_name="Data de Início da Exibição"
+    )
+    data_fim = models.DateTimeField(
+        blank=True, null=True, verbose_name="Data de Término da Exibição"
+    )
+
+    class Meta:
+        verbose_name = "Banner Informativo"
+        verbose_name_plural = "Banners Informativos"
+        ordering = ("ordem",)
+
+    def __str__(self):
+        return self.link_url or f"Banner {self.ordem}"
